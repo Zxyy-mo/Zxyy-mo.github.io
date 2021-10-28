@@ -23,12 +23,12 @@
 <meta property="og:site_name" content="粥余說">
 <meta property="og:description" content="Laravel 使用 JWT 做权限认证介绍JWT是 JSON Web Token 的缩写，是一个非常轻巧的规范，这个规范允许我们使用 JWT 在用户和服务器之间传递安全可靠的信息。JWT 由头部（header）、载荷（payload）与签名（signature）组成，一个 JWT 类似下面这样： header部分1234&amp;#123;    &quot;typ&quot;:&quot;JWT&amp;qu">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="http://example.com/2021/10/28/img/Laravel%E4%BD%BF%E7%94%A8JWT.asset/image-20211029000305902.png">
+<meta property="og:image" content="http://example.com/2021/10/28/Laravel%E4%BD%BF%E7%94%A8JWT/img/Laravel%E4%BD%BF%E7%94%A8JWT.asset/image-20211029000305902.png">
 <meta property="article:published_time" content="2021-10-28T13:41:25.000Z">
-<meta property="article:modified_time" content="2021-10-28T16:03:24.110Z">
+<meta property="article:modified_time" content="2021-10-28T16:09:32.140Z">
 <meta property="article:author" content="Handsome ZHOU">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="http://example.com/2021/10/28/img/Laravel%E4%BD%BF%E7%94%A8JWT.asset/image-20211029000305902.png">
+<meta name="twitter:image" content="http://example.com/2021/10/28/Laravel%E4%BD%BF%E7%94%A8JWT/img/Laravel%E4%BD%BF%E7%94%A8JWT.asset/image-20211029000305902.png">
   
   <title>Laravel使用JWT - 粥余說</title>
 
@@ -262,7 +262,7 @@
 <p>我们可以使用一下命令为用户生成一个token</p>
 <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs php">Auth::guard(<span class="hljs-string">&#x27;api&#x27;</span>)-&gt;fromUser(<span class="hljs-variable">$user</span>)<br><span class="hljs-comment">//此处的user是用户模型</span><br></code></pre></td></tr></table></figure>
 
-<p><img src="../img/Laravel%E4%BD%BF%E7%94%A8JWT.asset/image-20211029000305902.png" srcset="/img/loading.gif" lazyload alt="image-20211029000305902"></p>
+<p><img src="./img/Laravel%E4%BD%BF%E7%94%A8JWT.asset/image-20211029000305902.png" srcset="/img/loading.gif" lazyload alt="image-20211029000305902"></p>
 <p>顺便说一句</p>
 <ul>
 <li><code>JWT_TTL</code> 生成的 token 在多少分钟后过期，默认 60 分钟</li>
