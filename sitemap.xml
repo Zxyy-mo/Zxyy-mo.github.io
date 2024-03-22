@@ -38,43 +38,7 @@
   </url>
   
   <url>
-    <loc>https://cakepanit.com/bookshelf/golang-05/index.html</loc>
-    
-    <lastmod>2023-08-04</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>https://cakepanit.com/bookshelf/ops-01/index.html</loc>
-    
-    <lastmod>2023-08-04</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://cakepanit.com/bookshelf/golang-02/index.html</loc>
-    
-    <lastmod>2023-08-04</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://cakepanit.com/bookshelf/golang-03/index.html</loc>
-    
-    <lastmod>2023-08-04</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://cakepanit.com/bookshelf/golang-04/index.html</loc>
     
     <lastmod>2023-08-04</lastmod>
     
@@ -104,15 +68,6 @@
     <loc>https://cakepanit.com/protocol/comment/index.html</loc>
     
     <lastmod>2022-09-03</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://cakepanit.com/bookshelf/golang-01/index.html</loc>
-    
-    <lastmod>2022-09-01</lastmod>
     
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
