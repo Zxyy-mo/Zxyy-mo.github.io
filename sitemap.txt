@@ -13,5 +13,7 @@ https://zxyy.me/tags/index.html
 https://zxyy.me/categories/index.html
 https://zxyy.me/link/index.html
 https://zxyy.me/
+https://zxyy.me/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E5%BA%94%E7%94%A8/
 https://zxyy.me/tags/place/
+https://zxyy.me/categories/%E6%8E%A2%E7%B4%A2/
 
