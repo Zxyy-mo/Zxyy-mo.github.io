@@ -2,6 +2,15 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://zxyy.me/forward/24d30ec1.html</loc>
+    
+    <lastmod>2024-09-02</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>https://zxyy.me/forward/fa3d6d2f.html</loc>
     
     <lastmod>2024-09-02</lastmod>
@@ -227,21 +236,7 @@
 
   
   <url>
-    <loc>https://zxyy.me/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E5%BA%94%E7%94%A8/</loc>
-    <lastmod>2024-09-02</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
     <loc>https://zxyy.me/tags/langchain/</loc>
-    <lastmod>2024-09-02</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://zxyy.me/tags/MacOS%E7%BB%88%E7%AB%AF/</loc>
     <lastmod>2024-09-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -261,10 +256,24 @@
     <priority>0.2</priority>
   </url>
   
+  <url>
+    <loc>https://zxyy.me/tags/MacOS%E7%BB%88%E7%AB%AF/</loc>
+    <lastmod>2024-09-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://zxyy.me/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E5%BA%94%E7%94%A8/</loc>
+    <lastmod>2024-09-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
 
   
   <url>
-    <loc>https://zxyy.me/categories/%E6%8E%A2%E7%B4%A2/</loc>
+    <loc>https://zxyy.me/categories/%E6%97%A5%E8%AE%B0/</loc>
     <lastmod>2024-09-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -278,7 +287,7 @@
   </url>
   
   <url>
-    <loc>https://zxyy.me/categories/%E6%97%A5%E8%AE%B0/</loc>
+    <loc>https://zxyy.me/categories/%E6%8E%A2%E7%B4%A2/</loc>
     <lastmod>2024-09-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
