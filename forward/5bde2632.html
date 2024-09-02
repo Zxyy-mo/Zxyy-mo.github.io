@@ -1,0 +1,382 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"><title>Langchain系列[15]向量过滤 VS 文档去重 | 粥余阿~</title><meta name="author" content="粥余"><meta name="copyright" content="粥余"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="向量过滤 EmbeddingsFilter 使用大型语言模型（LLM）来处理每个找到的文件很费钱，而且速度不快。 而EmbeddingsFilter这个工具提供了一种更经济、更迅速的方法。 它会先将文件和你的问题转换成一种数学表达（嵌入），然后只挑出那些和你的问题在数学表达上相似的文件。这样就不需要每个文件都去麻烦那个大模型，省时省力。 设定一个门限值，通过输入问题和内容的相关度（0~1），进行过">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Langchain系列[15]向量过滤 VS 文档去重">
+<meta property="og:url" content="https://zxyy.me/forward/5bde2632.html">
+<meta property="og:site_name" content="粥余阿~">
+<meta property="og:description" content="向量过滤 EmbeddingsFilter 使用大型语言模型（LLM）来处理每个找到的文件很费钱，而且速度不快。 而EmbeddingsFilter这个工具提供了一种更经济、更迅速的方法。 它会先将文件和你的问题转换成一种数学表达（嵌入），然后只挑出那些和你的问题在数学表达上相似的文件。这样就不需要每个文件都去麻烦那个大模型，省时省力。 设定一个门限值，通过输入问题和内容的相关度（0~1），进行过">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://zxyy.me/img/langchain/cover.png">
+<meta property="article:published_time" content="2024-08-15T08:11:00.000Z">
+<meta property="article:modified_time" content="2024-09-02T14:45:56.541Z">
+<meta property="article:author" content="粥余">
+<meta property="article:tag" content="langchain">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zxyy.me/img/langchain/cover.png"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://zxyy.me/forward/5bde2632.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//www.google-analytics.com" crossorigin=""/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="/css/fei/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="/css/fei/fancybox.min.css" media="print" onload="this.media='all'"><script data-pjax="" defer="" async="async" src="https://www.googletagmanager.com/gtag/js?id=G-0MFDY8HY5K"></script><script>window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-0MFDY8HY5K');
+</script><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.json","preload":false,"languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":300},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '天',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: {"limitCount":100,"languages":{"author":"作者: 粥余","link":"链接: ","source":"来源: 粥余阿~","info":"著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。"}},
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: '/css/fei/fjGallery.min.js',
+      css: '/css/fei/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Langchain系列[15]向量过滤 VS 文档去重',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: false,
+  postUpdate: '2024-09-02 22:45:56'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = url => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      link.onload = () => resolve()
+      link.onerror = () => reject()
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="https://s1.hdslb.com/bfs/static/jinkela/long/font/regular.css"><link rel="stylesheet" href="/css/fei/swiper-bundle.min.css"><script src="/css/fei/swiper-bundle.min.js"></script><script src="/css/fei/pace.min.js"></script><script src="/css/fei/echarts.min.js"></script><style type="text/css"> .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body { left: -66px !important; /* 默认情况下缩进左侧66px，只留一点箭头部分 */ }
+.aplayer.aplayer-fixed.aplayer-narrow .aplayer-body:hover { left: 0 !important; /* 鼠标悬停是左侧缩进归零，完全显示按钮 */ } </style></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/avatar.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">27</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">5</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">3</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa-fw fas fa-book-open"></i><span> 文章</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><i class="fa-fw fa-fw fas fa-archive"></i><span> 文章列表</span></a></li><li><a class="site-page child" href="/categories/"><i class="fa-fw fa-fw fas fa-shapes"></i><span> 全部分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa-fw fas fa-tags"></i><span> 所有标签</span></a></li><li><a class="site-page child" href="/charts/"><i class="fa-fw fa-fw fas fa-chart-line"></i><span> 文章统计</span></a></li><li><a class="site-page child" href="javascript:toRandomPost();"><i class="fa-fw fa-fw fas fa-random"></i><span> 随便看看</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa-fw fas fa-link"></i><span> 导航</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/link/"><i class="fa-fw fa-fw fas fa-child"></i><span> 友情链接</span></a></li><li><a class="site-page child" href="/about/"><i class="fa-fw fa-fw fas fa-address-card"></i><span> 关于本站</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 其他</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-file-image"></i><span> 收藏图库</span></a></li><li><a class="site-page child" href="/bookshelf/"><i class="fa-fw fas fa-bookmark"></i><span> 收藏书单</span></a></li><li><a class="site-page child" href="/status"><i class="fa-fw fab fa-accessible-icon"></i><span> 站点监控</span></a></li></ul></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/langchain/cover.png')"><nav id="nav"><div id="nav-group"><span id="blog-info"> <a class="site-page" href="/" title="粥余阿~"><span class="site-name">粥余阿~</span><i class="fas fa-home"></i></a></span><span id="page_name"><a class="site-page" id="page-title" title="回到顶部" onclick="btf.scrollToDest(0, 500)"><span>粥余阿~</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa-fw fas fa-book-open"></i><span> 文章</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><i class="fa-fw fa-fw fas fa-archive"></i><span> 文章列表</span></a></li><li><a class="site-page child" href="/categories/"><i class="fa-fw fa-fw fas fa-shapes"></i><span> 全部分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa-fw fas fa-tags"></i><span> 所有标签</span></a></li><li><a class="site-page child" href="/charts/"><i class="fa-fw fa-fw fas fa-chart-line"></i><span> 文章统计</span></a></li><li><a class="site-page child" href="javascript:toRandomPost();"><i class="fa-fw fa-fw fas fa-random"></i><span> 随便看看</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa-fw fas fa-link"></i><span> 导航</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/link/"><i class="fa-fw fa-fw fas fa-child"></i><span> 友情链接</span></a></li><li><a class="site-page child" href="/about/"><i class="fa-fw fa-fw fas fa-address-card"></i><span> 关于本站</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 其他</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-file-image"></i><span> 收藏图库</span></a></li><li><a class="site-page child" href="/bookshelf/"><i class="fa-fw fas fa-bookmark"></i><span> 收藏书单</span></a></li><li><a class="site-page child" href="/status"><i class="fa-fw fab fa-accessible-icon"></i><span> 站点监控</span></a></li></ul></div></div></div><div id="hotkey"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);" title="搜索"><i class="fas fa-search fa-fw"></i></a></div><div id="setting-button" onclick="eurkon.switchRightSide();"><a class="site-page" href="javascript:void(0);" title="设置"><i class="fas fa-screwdriver-wrench fa-fw"></i></a></div><div id="top-button"><a class="site-page" href="javascript:void(0);" title="回到顶部" onclick="btf.scrollToDest(0, 500)"><span class="scroll-percent"></span><i class="fas fa-arrow-up fa-fw"></i></a></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></div></nav><div id="post-cover"><img class="cover" id="post-cover-img" src="/img/langchain/cover.png" alt="cover"></div><div id="post-info"><div id="post-meta"><div class="meta-firstline"><span class="post-meta-tags"><span class="post-meta-separator">|</span><i class="fas fa-tags fa-fw post-meta-icon"></i><a class="post-meta-tags" href="/tags/langchain/">langchain</a></span></div><h1 class="post-title">Langchain系列[15]向量过滤 VS 文档去重</h1><div class="meta-secondline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2024-08-15T08:11:00.000Z" title="发表于 2024-08-15 16:11:00">2024-08-15</time></span><span class="post-meta-separator">|</span><span class="post-meta-date"><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2024-09-02T14:45:56.541Z" title="更新于 2024-09-02 22:45:56">2024-09-02</time></span><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">1.1k</span><span class="post-meta-separator">|</span></span><span class="post-meta-min2read"><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>5分钟</span></span></div></div></div><section class="main-hero-waves-area waves-area"><svg class="waves-svg" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink" viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto"><defs><path id="gentle-wave" d="M -160 44 c 30 0 58 -18 88 -18 s 58 18 88 18 s 58 -18 88 -18 s 58 18 88 18 v 44 h -352 Z"></path></defs><g class="parallax"><use href="#gentle-wave" x="48" y="0"></use><use href="#gentle-wave" x="48" y="3"></use><use href="#gentle-wave" x="48" y="5"></use><use href="#gentle-wave" x="48" y="7"></use></g></svg></section></header><main class="layout" id="content-inner"><div><div id="post"><article class="post-content" id="article-container"><p>向量过滤 <code>EmbeddingsFilter</code></p>
+<p>使用大型语言模型（LLM）来处理每个找到的文件很费钱，而且速度不快。</p>
+<p>而EmbeddingsFilter这个工具提供了一种更经济、更迅速的方法。</p>
+<p><strong>它会先将文件和你的问题转换成一种数学表达（嵌入），然后只挑出那些和你的问题在数学表达上相似的文件</strong>。这样就不需要每个文件都去麻烦那个大模型，省时省力。</p>
+<p><strong>设定一个门限值，通过输入问题和内容的相关度（0~1），进行过滤</strong></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">question = <span class="string">&quot;What is Task Decomposition ?&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 解析并载入url</span></span><br><span class="line">loader = WebBaseLoader(<span class="string">&quot;https://lilianweng.github.io/posts/2023-06-23-agent/&quot;</span>)</span><br><span class="line">docs = loader.load()</span><br><span class="line"></span><br><span class="line">text_splitter = RecursiveCharacterTextSplitter(chunk_size=<span class="number">400</span>)</span><br><span class="line">docs = text_splitter.split_documents(docs)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 索引数据 ，一次就够，后续可以注释</span></span><br><span class="line"><span class="comment"># # vectorstore.add_documents(docs)</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># EmbeddingsFilter</span></span><br><span class="line"></span><br><span class="line">embedding_filter_embeddings_filter = EmbeddingsFilter(embeddings=embeddings_model, similarity_threshold=<span class="number">0.7</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 直接过滤文档</span></span><br><span class="line">filtered_docs = embedding_filter_embeddings_filter.compress_documents(docs[:<span class="number">10</span>],question)</span><br><span class="line"><span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line">embedding_filter_compression_retriever = ContextualCompressionRetriever(</span><br><span class="line">    base_compressor=embedding_filter_embeddings_filter, base_retriever=retriever</span><br><span class="line">)</span><br><span class="line">embedding_filter_docs = embedding_filter_compression_retriever.get_relevant_documents(question)</span><br><span class="line"><span class="keyword">pass</span></span><br></pre></td></tr></table></figure>
+
+<p>文档去重 EmbeddingsRedundantFilter</p>
+<p><img src="/images/Langchain%E7%B3%BB%E5%88%97-15-%E5%90%91%E9%87%8F%E8%BF%87%E6%BB%A4-VS-%E6%96%87%E6%A1%A3%E5%8E%BB%E9%87%8D.assets/image-20240627102230593.png" alt="image-20240627102230593"></p>
+<p>相似度矩阵右上部分：相似度阈值：similarity_threshold**:** float <strong>=</strong> 0.95</p>
+<p><img src="/images/Langchain%E7%B3%BB%E5%88%97-15-%E5%90%91%E9%87%8F%E8%BF%87%E6%BB%A4-VS-%E6%96%87%E6%A1%A3%E5%8E%BB%E9%87%8D.assets/image-20240627102244474.png" alt="image-20240627102244474"></p>
+<p>使用方法</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">docs = [</span><br><span class="line">    Document(page_content = <span class="string">&quot;粥余知识库&quot;</span>),</span><br><span class="line">    Document(page_content = <span class="string">&quot;粥余知识库&quot;</span>),</span><br><span class="line">    Document(page_content=<span class="string">&quot;同学你好！&quot;</span>),</span><br><span class="line">    Document(page_content=<span class="string">&quot;同学你好！&quot;</span>),</span><br><span class="line">]</span><br><span class="line">redundant_filter = EmbeddingsRedundantFilter(embeddings=embeddings_model)</span><br><span class="line">filered_docs = redundant_filter.transform_documents(docs)</span><br></pre></td></tr></table></figure>
+
+<p><img src="/images/Langchain%E7%B3%BB%E5%88%97-15-%E5%90%91%E9%87%8F%E8%BF%87%E6%BB%A4-VS-%E6%96%87%E6%A1%A3%E5%8E%BB%E9%87%8D.assets/image-20240627102251937.png" alt="image-20240627102251937"></p>
+<hr>
+<p>文档一条龙处理：<code>DocumentCompressorPipeline</code></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 文本去重</span></span><br><span class="line">redundant_filter = EmbeddingsRedundantFilter(embeddings=embeddings_model)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 通过问题和文本的 语义相似度过滤</span></span><br><span class="line">emb_filter = EmbeddingsFilter(embeddings=embeddings_model, similarity_threshold=<span class="number">0.6</span>)</span><br><span class="line"><span class="comment"># 文档压缩</span></span><br><span class="line">qianfan_compressor = LLMChainExtractor.from_llm(qianfan_chat)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 建立管道： 过滤 + 压缩</span></span><br><span class="line">pipeline_compressor = DocumentCompressorPipeline(</span><br><span class="line">    transformers=[emb_filter,redundant_filter,qianfan_compressor]</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 建立 语境压缩 Retriever</span></span><br><span class="line">compression_retriever = ContextualCompressionRetriever(</span><br><span class="line">    base_compressor=pipeline_compressor, base_retriever=retriever</span><br><span class="line">)</span><br><span class="line"><span class="comment"># 文档召回</span></span><br><span class="line">compressed_docs = compression_retriever.get_relevant_documents(question)</span><br><span class="line"> </span><br></pre></td></tr></table></figure>
+
+<hr>
+<p><strong>Long-Context Reorder： 多个文档→重新排序</strong></p>
+<p>相关论文<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2307.03172">https://arxiv.org/abs/2307.03172</a></p>
+<p><img src="/images/Langchain%E7%B3%BB%E5%88%97-15-%E5%90%91%E9%87%8F%E8%BF%87%E6%BB%A4-VS-%E6%96%87%E6%A1%A3%E5%8E%BB%E9%87%8D.assets/image-20240627102259819.png" alt="image-20240627102259819"></p>
+<p>调用方法</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 文档重排序</span></span><br><span class="line">retriever = vectorstore.as_retriever(search_kwargs=&#123;<span class="string">&quot;k&quot;</span>: <span class="number">10</span>&#125;)</span><br><span class="line">docs_pre = retriever.get_relevant_documents(<span class="string">&#x27;Decomposition&#x27;</span>)</span><br><span class="line">reordering = LongContextReorder()</span><br><span class="line">reordered_docs = reordering.transform_documents(docs_pre)</span><br><span class="line"></span><br><span class="line">   </span><br></pre></td></tr></table></figure>
+
+<p>排序之前</p>
+<p><img src="/images/Langchain%E7%B3%BB%E5%88%97-15-%E5%90%91%E9%87%8F%E8%BF%87%E6%BB%A4-VS-%E6%96%87%E6%A1%A3%E5%8E%BB%E9%87%8D.assets/image-20240627102307259.png" alt="image-20240627102307259"></p>
+<p>排序之后</p>
+<p><img src="/images/Langchain%E7%B3%BB%E5%88%97-15-%E5%90%91%E9%87%8F%E8%BF%87%E6%BB%A4-VS-%E6%96%87%E6%A1%A3%E5%8E%BB%E9%87%8D.assets/image-20240627102314989.png" alt="image-20240627102314989"></p>
+<p>长文本注意事项</p>
+<p><a target="_blank" rel="noopener" href="https://blog.langchain.dev/multi-needle-in-a-haystack/">https://blog.langchain.dev/multi-needle-in-a-haystack/</a></p>
+<p>在长文本提示词中（甚至长达1MB），将<strong>事实</strong>放到不同的位置，召回效果不同</p>
+<p><img src="/images/Langchain%E7%B3%BB%E5%88%97-15-%E5%90%91%E9%87%8F%E8%BF%87%E6%BB%A4-VS-%E6%96%87%E6%A1%A3%E5%8E%BB%E9%87%8D.assets/image-20240627102413330.png" alt="image-20240627102413330"></p>
+<p>正确的召回</p>
+<p><img src="/images/Langchain%E7%B3%BB%E5%88%97-15-%E5%90%91%E9%87%8F%E8%BF%87%E6%BB%A4-VS-%E6%96%87%E6%A1%A3%E5%8E%BB%E9%87%8D.assets/image-20240627102817494.png" alt="image-20240627102817494"></p>
+<p>不完整的召回</p>
+<p><img src="/images/Langchain%E7%B3%BB%E5%88%97-15-%E5%90%91%E9%87%8F%E8%BF%87%E6%BB%A4-VS-%E6%96%87%E6%A1%A3%E5%8E%BB%E9%87%8D.assets/image-20240627102902072.png" alt="image-20240627102902072"></p>
+<p><img src="/images/Langchain%E7%B3%BB%E5%88%97-15-%E5%90%91%E9%87%8F%E8%BF%87%E6%BB%A4-VS-%E6%96%87%E6%A1%A3%E5%8E%BB%E9%87%8D.assets/image-20240627102922081.png" alt="image-20240627102922081"></p>
+<p>事实 处于不同的文档深度时</p>
+<p><img src="/images/Langchain%E7%B3%BB%E5%88%97-15-%E5%90%91%E9%87%8F%E8%BF%87%E6%BB%A4-VS-%E6%96%87%E6%A1%A3%E5%8E%BB%E9%87%8D.assets/image-20240627102932168.png" alt="image-20240627102932168"></p>
+<p>代码</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> uuid <span class="keyword">import</span> uuid4</span><br><span class="line"><span class="keyword">from</span> langchain.retrievers <span class="keyword">import</span> ContextualCompressionRetriever</span><br><span class="line"><span class="keyword">from</span> langchain.retrievers.document_compressors <span class="keyword">import</span> LLMChainExtractor, LLMChainFilter, EmbeddingsFilter, \</span><br><span class="line">    DocumentCompressorPipeline</span><br><span class="line"><span class="keyword">from</span> langchain.text_splitter <span class="keyword">import</span> CharacterTextSplitter</span><br><span class="line"><span class="keyword">from</span> langchain_community.chat_models <span class="keyword">import</span> AzureChatOpenAI</span><br><span class="line"><span class="keyword">from</span> langchain_community.chat_models.baidu_qianfan_endpoint <span class="keyword">import</span> QianfanChatEndpoint</span><br><span class="line"><span class="keyword">from</span> langchain_community.document_loaders.web_base <span class="keyword">import</span> WebBaseLoader</span><br><span class="line"><span class="keyword">from</span> langchain_community.document_transformers <span class="keyword">import</span> EmbeddingsRedundantFilter, LongContextReorder</span><br><span class="line"><span class="keyword">from</span> langchain_community.llms.chatglm3 <span class="keyword">import</span> ChatGLM3</span><br><span class="line"><span class="keyword">from</span> langchain_community.vectorstores.elasticsearch <span class="keyword">import</span> ElasticsearchStore</span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"><span class="keyword">from</span> langchain_community.embeddings <span class="keyword">import</span> QianfanEmbeddingsEndpoint, HuggingFaceEmbeddings</span><br><span class="line"><span class="keyword">from</span> langchain_core.documents <span class="keyword">import</span> Document</span><br><span class="line"><span class="keyword">from</span> langchain_core.messages <span class="keyword">import</span> SystemMessage</span><br><span class="line"><span class="keyword">from</span> langchain_core.output_parsers <span class="keyword">import</span> StrOutputParser</span><br><span class="line"><span class="keyword">from</span> langchain_core.prompts <span class="keyword">import</span> ChatPromptTemplate</span><br><span class="line"><span class="keyword">from</span> langchain_text_splitters <span class="keyword">import</span> RecursiveCharacterTextSplitter</span><br><span class="line"><span class="keyword">from</span> zhipuai <span class="keyword">import</span> ZhipuAI</span><br><span class="line"></span><br><span class="line"><span class="comment"># Langsmith 配置，不用可注掉</span></span><br><span class="line">unique_id = uuid4().<span class="built_in">hex</span>[<span class="number">0</span>:<span class="number">8</span>]</span><br><span class="line">os.environ[<span class="string">&quot;LANGCHAIN_PROJECT&quot;</span>] = <span class="string">f&quot; 文档处理管道 Walkthrough - <span class="subst">&#123;unique_id&#125;</span>&quot;</span></span><br><span class="line">os.environ[<span class="string">&quot;LANGCHAIN_TRACING_V2&quot;</span>] = <span class="string">&#x27;true&#x27;</span></span><br><span class="line">os.environ[<span class="string">&quot;LANGCHAIN_API_KEY&quot;</span>] = os.getenv(<span class="string">&#x27;MY_LANGCHAIN_API_KEY&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 本地 BGE 模型</span></span><br><span class="line">bge_en_v1p5_model_path = <span class="string">&quot;D:\\LLM\\Bge_models\\bge-base-en-v1.5&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 使用GPU</span></span><br><span class="line">embeddings_model = HuggingFaceEmbeddings(</span><br><span class="line">    model_name=bge_en_v1p5_model_path,</span><br><span class="line">    model_kwargs=&#123;<span class="string">&#x27;device&#x27;</span>: <span class="string">&#x27;cuda:0&#x27;</span>&#125;,</span><br><span class="line">    encode_kwargs=&#123;<span class="string">&#x27;batch_size&#x27;</span>: <span class="number">32</span>, <span class="string">&#x27;normalize_embeddings&#x27;</span>: <span class="literal">True</span>, &#125;</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment"># # 向量数据库</span></span><br><span class="line">vectorstore = ElasticsearchStore(</span><br><span class="line">    es_url=os.environ[<span class="string">&#x27;ELASTIC_HOST_HTTP&#x27;</span>],</span><br><span class="line">    index_name=<span class="string">&quot;index_sd_1024_vectors&quot;</span>,</span><br><span class="line">    embedding=embeddings_model,</span><br><span class="line">    es_user=<span class="string">&quot;elastic&quot;</span>,</span><br><span class="line">    vector_query_field=<span class="string">&#x27;question_vectors&#x27;</span>,</span><br><span class="line">    es_password=os.environ[<span class="string">&#x27;ELASTIC_ACCESS_PASSWORD&#x27;</span>]</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">retriever = vectorstore.as_retriever(search_kwargs=&#123;<span class="string">&quot;k&quot;</span>: <span class="number">4</span>&#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment"># Azure Openai</span></span><br><span class="line">os.environ[<span class="string">&quot;AZURE_OPENAI_API_KEY&quot;</span>] = os.getenv(<span class="string">&#x27;MY_AZURE_OPENAI_API_KEY&#x27;</span>)</span><br><span class="line">os.environ[<span class="string">&quot;AZURE_OPENAI_ENDPOINT&quot;</span>] = os.getenv(<span class="string">&#x27;MY_AZURE_OPENAI_ENDPOINT&#x27;</span>)</span><br><span class="line">DEPLOYMENT_NAME_GPT3P5 = os.getenv(<span class="string">&#x27;MY_DEPLOYMENT_NAME_GPT3P5&#x27;</span>)</span><br><span class="line">azure_chat = AzureChatOpenAI(</span><br><span class="line">    openai_api_version=<span class="string">&quot;2023-05-15&quot;</span>,</span><br><span class="line">    azure_deployment=DEPLOYMENT_NAME_GPT3P5,</span><br><span class="line">    temperature=<span class="number">0</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">os.environ[<span class="string">&quot;QIANFAN_ACCESS_KEY&quot;</span>] = os.getenv(<span class="string">&#x27;MY_QIANFAN_ACCESS_KEY&#x27;</span>)</span><br><span class="line">os.environ[<span class="string">&quot;QIANFAN_SECRET_KEY&quot;</span>] = os.getenv(<span class="string">&#x27;MY_QIANFAN_SECRET_KEY&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 千帆 chatModel</span></span><br><span class="line">qianfan_chat = QianfanChatEndpoint(</span><br><span class="line">    model=<span class="string">&quot;ERNIE-Bot-4&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">messages = [</span><br><span class="line">    SystemMessage(content=<span class="string">&quot;You are an intelligent AI assistant, named ChatGLM3.&quot;</span>),</span><br><span class="line">]</span><br><span class="line"><span class="comment"># 本地GLM3-6B模型</span></span><br><span class="line">LOCAL_GLM3_6B_ENDPOINT = <span class="string">&quot;http://127.0.0.1:8000/v1/chat/completions&quot;</span></span><br><span class="line">local_glm3_chat = ChatGLM3(</span><br><span class="line">    endpoint_url=LOCAL_GLM3_6B_ENDPOINT,</span><br><span class="line">    max_tokens=(<span class="number">1024</span> * <span class="number">32</span>),</span><br><span class="line">    prefix_messages=messages,</span><br><span class="line">    top_p=<span class="number">0.9</span>,</span><br><span class="line">    temperature=<span class="number">0</span>,</span><br><span class="line">    stream=<span class="literal">True</span>,</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line"></span><br><span class="line">    question = <span class="string">&quot;What is Task Decomposition ?&quot;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># 解析并载入url</span></span><br><span class="line">    loader = WebBaseLoader(<span class="string">&quot;https://lilianweng.github.io/posts/2023-06-23-agent/&quot;</span>)</span><br><span class="line">    docs = loader.load()</span><br><span class="line"></span><br><span class="line">    text_splitter = RecursiveCharacterTextSplitter(chunk_size=<span class="number">400</span>)</span><br><span class="line">    docs = text_splitter.split_documents(docs)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 索引数据 ，一次就够，后续可以注释</span></span><br><span class="line">    <span class="comment"># # vectorstore.add_documents(docs)</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># EmbeddingsFilter</span></span><br><span class="line"></span><br><span class="line">    embedding_filter_embeddings_filter = EmbeddingsFilter(embeddings=embeddings_model, similarity_threshold=<span class="number">0.7</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 直接过滤文档</span></span><br><span class="line">    filtered_docs = embedding_filter_embeddings_filter.compress_documents(docs[:<span class="number">10</span>],question)</span><br><span class="line">    <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line">    embedding_filter_compression_retriever = ContextualCompressionRetriever(</span><br><span class="line">        base_compressor=embedding_filter_embeddings_filter, base_retriever=retriever</span><br><span class="line">    )</span><br><span class="line">    <span class="comment"># embedding_filter_docs = embedding_filter_compression_retriever.get_relevant_documents(question)</span></span><br><span class="line">    <span class="comment"># pass</span></span><br><span class="line"></span><br><span class="line">    docs = [</span><br><span class="line">        Document(page_content = <span class="string">&quot;粥余知识库&quot;</span>),</span><br><span class="line">        Document(page_content = <span class="string">&quot;粥余知识库&quot;</span>),</span><br><span class="line">        Document(page_content=<span class="string">&quot;同学你好！&quot;</span>),</span><br><span class="line">        Document(page_content=<span class="string">&quot;同学你好！&quot;</span>),</span><br><span class="line">    ]</span><br><span class="line">    <span class="comment"># 文本去重</span></span><br><span class="line">    redundant_filter = EmbeddingsRedundantFilter(embeddings=embeddings_model)</span><br><span class="line">    <span class="comment"># filered_docs = redundant_filter.transform_documents(docs)</span></span><br><span class="line">    <span class="comment"># pass</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># 通过问题和文本的 语义相似度过滤</span></span><br><span class="line">    relevant_filter = EmbeddingsFilter(embeddings=embeddings_model, similarity_threshold=<span class="number">0.6</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 文档压缩</span></span><br><span class="line">    qianfan_compressor = LLMChainExtractor.from_llm(qianfan_chat)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 文档快速处理</span></span><br><span class="line">    pipeline_compressor = DocumentCompressorPipeline(</span><br><span class="line">        transformers=[redundant_filter, relevant_filter,qianfan_compressor]</span><br><span class="line">    )</span><br><span class="line"></span><br><span class="line">    compression_retriever = ContextualCompressionRetriever(</span><br><span class="line">        base_compressor=pipeline_compressor, base_retriever=retriever</span><br><span class="line">    )</span><br><span class="line">    <span class="comment"># compressed_docs = compression_retriever.get_relevant_documents(question)</span></span><br><span class="line">    <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># 重排序</span></span><br><span class="line">    retriever = vectorstore.as_retriever(search_kwargs=&#123;<span class="string">&quot;k&quot;</span>: <span class="number">10</span>&#125;)</span><br><span class="line">    docs_pre = retriever.get_relevant_documents(<span class="string">&#x27;Decomposition&#x27;</span>)</span><br><span class="line">    reordering = LongContextReorder()</span><br><span class="line">    reordered_docs = reordering.transform_documents(docs_pre)</span><br><span class="line">    <span class="keyword">pass</span></span><br></pre></td></tr></table></figure></article><div class="post-copyright"><div class="post-copyright__title"><span class="post-copyright-info">Langchain系列[15]向量过滤 VS 文档去重</span></div><div class="post-copyright__url"><span class="post-copyright-info"><a id="post-url" href="https://zxyy.me/forward/5bde2632.html">https://zxyy.me/forward/5bde2632.html</a><a id="post-url-copy" title="复制文章链接" onclick="btf.copyFn(&quot;https://zxyy.me/forward/5bde2632.html&quot;)"><i class="fas fa-paste copy-button"></i></a></span></div><div class="post-copyright__cc"><span class="post-copyright-info">转载前请阅读本站 <a href="/protocol/copyright/" title="本站所有原创文章采用知识共享(Creative Commons)署名—非商业性使用—相同方式共享4.0国际公共许可协议">版权协议</a>，文章著作权归 <a href="https://zxyy.me">粥余</a> 所有，转载请注明出处。</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/langchain/">langchain</a></div><div class="post_share"><div class="social-share" data-image="/img/langchain/cover.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="/css/fei/share.min.css" media="print" onload="this.media='all'"><script src="/css/fei/share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/forward/b8db8981.html" title="Langchain系列[16]下载和使用Rerank模型"><img class="cover" src="/img/langchain/cover.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">Langchain系列[16]下载和使用Rerank模型</div><div class="content">Rerank
+即重新排序，是信息检索、推荐系统、自然语言处理和机器学习领域中的一种常见技术。它的目的是提高搜索结果、推荐列表或生成内容的相关性，使其更符合用户的需求或期望。
+在RAG里，我们主要利用Rerank 模型来对初步检索出的文档（比如通过BM25或者向量检索召回的文档）进行重排序和过滤。
+
+支持一种语言的嵌入模型
+
+英语 bge-large-en
+中文 bge-large-zh
+
+支持双语的嵌入模型
+
+网易有道 BCEmbedding
+
+
+网易有道 BCEmbedding
+优势
+
+双语和跨语种能力：基于有道翻译引擎的强大能力，BCEmbedding实现强大的中英双语和跨语种语义表征能力。
+RAG适配：面向RAG做针对性优化，可适配大多数相关任务，比如翻译，摘要，问答等。此外，针对 问题理解（query understanding） 也做了针对优化
+高效且精确的语义检索：EmbeddingModel采用双编码器，可以在第一阶段实现高效的语义检索。RerankerModel采用交叉编码器，可以在第二阶段实现更高精度的语义顺序精排。
+更好的领域泛化性：为了在更多场景实现更好的效果，我 ...</div></div></a></div><div class="next-post pull-right"><a href="/forward/ee0ed6e3.html" title="Langchain系列[14]文档内容提取vs内容过滤"><img class="cover" src="/img/langchain/cover.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Langchain系列[14]文档内容提取vs内容过滤</div><div class="content">文档内容提取:LLMChainExtractor
+在检索过程中，一个挑战是通常你不知道你的文档存储系统在数据导入时会遇到哪些具体的查询。这意味着对查询来说最相关的信息可能埋没在一个包含大量不相关文本的文档中。
+将整个文档通过你的应用程序可能会导致更昂贵的LLM（大型语言模型）调用和更差的响应。 上下文压缩旨在解决这个问题。这个想法很简单：不是立即按原样返回检索到的文档，而是可以使用给定查询的上下文来压缩它们，以便只返回相关信息。这里的“压缩”既指压缩单个文档的内容，也指整体过滤掉文档。 要使用上下文压缩检索器，你需要：- 一个基础检索器- 一个文档压缩器 上下文压缩检索器将查询传递给基础检索器，获取初始文档并通过文档压缩器传递它们。文档压缩器接收一个文档列表，通过减少文档内容或完全删除文档来缩短列表。
+核心思想：对召回的文档进行关键信息提取
+
+langchain 解决办法
+retriever ： 向量数据库实例化的检索器
+compressor： 本质是一个chain, 传入一个语言模型（比如千帆）
+12345# LLMChainExtractorcompressor = LLMChai ...</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/forward/24d30ec1.html" title="Langchain系列[02]使用LCEL构建一个简单的LLM应用程序"><img class="cover" src="/img/langchain/cover.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-06-23</div><div class="title">Langchain系列[02]使用LCEL构建一个简单的LLM应用程序</div><div class="info">目标今天咱们介绍一下如何使用 LangChain 构建一个简单的 LLM 应用程序。
+这个应用程序能够将英文文本翻译成其他语言。
+这是一个相对简单的 LLM 应用程序 —— 它仅包含一个 LLM 调用和一些提示。
+今天的学习目的是初步了解下面的概念
+
+使用语言模型 （必须）
+使用 PromptTemplates 和 OutputParsers（必须）
+使用 LangChain 表达式语言 (LCEL) 将组件连接在一起（必须）
+使用 LangSmith 调试和跟踪您的应用程序 （不用也问题不大）
+使用 LangServe 部署您的应用程序（不用也问题不大）
+
+准备阶段我们全程使用windows + python, 其他的方法就不介绍了，同学们可以自己探索~
+安装
+1pip install langchain
+
+关于 Jupyter Notebook
+咱们用能跑python的编程工具就可以，用什么来跑不是很重要-。-
+LangSmith
+langsmith 是一个可以跟踪runnable  的工具，可以跟踪和记录复杂流程中的大部分参数，对于复杂问题分析很有帮助。在学习初期，我们可以先不使 ...</div></div></a></div><div><a href="/forward/53b4c1f8.html" title="Langchain系列[03]聊天机器人 Chatbot"><img class="cover" src="/img/langchain/cover.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-06-25</div><div class="title">Langchain系列[03]聊天机器人 Chatbot</div><div class="info">目标
+我们将建立一个带有对话历史的聊天机器人。
+以下是我们将要使用的一些组件：
+
+聊天模型（Chat Models）：聊天机器人的界面是基于消息传递而不是原始文本，因此它更适合使用聊天模型而不是文本型的 LLM。
+提示模板（Prompt Templates）：这些模板简化了组装提示的过程，可以结合默认消息、用户输入、聊天历史以及（可选的）额外检索到的上下文。
+聊天历史（Chat History）：聊天历史允许聊天机器人“记住”过去的交互，并在回应后续问题时考虑这些历史。
+使用 LangSmith 调试和跟踪你的应用程序（非必须）。
+
+
+聊天历史在[Vol][2]中，我们使用了一个 messages[]来保存和传递消息，它是这个样子
+12345[      SystemMessage(content=&quot;Translate the following from English into Italian&quot;),      HumanMessage(content=&quot;hi!&quot;),      ...]
+
+其实，随着对话的增长，我们可以把AI消息和我们自己的消 ...</div></div></a></div><div><a href="/forward/1f042660.html" title="Langchain系列[04]表达式语言LCEL"><img class="cover" src="/img/langchain/cover.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-06-30</div><div class="title">Langchain系列[04]表达式语言LCEL</div><div class="info">目标123- 了解LCEL包含的组件，可以调用的方法。- 链式调用基本形式
+
+LangChain 表达式语言（LCEL）是一种让用户能够更容易地组合不同链条的声明式编程方式。
+之前我们介绍了chain 中的组件，这个文档来明确一下组件之间的输入和输出
+LCEL 从一开始就是为了支持将原型直接投入生产而设计的，无需修改任何代码。这适用于从最简单的“提示+大语言模型”链条到最复杂的链条（我们已经看到有人成功在生产环境中运行包含数百个步骤的 LCEL 链条）。以下是您可能想使用 LCEL 的几个原因：
+
+流支持：使用 LCEL 构建链条时，您可以从第一个令牌开始就获得最快的响应时间（即从输出开始到第一个数据块出现的时间）。对于某些链条来说，这意味着我们可以直接从大语言模型向输出解析器发送令牌流，您将以与模型提供者输出原始令牌相同的速度接收到解析后的数据块。
+
+异步支持：使用 LCEL 构建的任何链条都可以通过同步 API（例如，在 Jupyter  笔记本中测试原型）或异步 API（例如，在 LangServe  服务器中）调用。这使得您可以使用相同的代码进行原型设计和生产，同时还能保持出色 ...</div></div></a></div><div><a href="/forward/fa3d6d2f.html" title="Langchain系列[06]语言模型"><img class="cover" src="/img/langchain/cover.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-07-08</div><div class="title">Langchain系列[06]语言模型</div><div class="info">目标模型入门
+Langchain 2.0 都找不到下面这个图了，藏到了1.0 里面…
+语言模型是核心，我们需要熟悉跟语言模型相关的消息：系统消息、AI消息、Human消息、工具消息…
+
+llm vs  chatModel
+百度千帆
+对话
+1234567chat_comp = qianfan.ChatCompletion(access_key=&quot;...&quot;, secret_key=&quot;...&quot;)# 调用默认模型，即 ERNIE-Bot-turboresp = chat_comp.do(messages=[&#123;    &quot;role&quot;: &quot;user&quot;,    &quot;content&quot;: &quot;你好&quot;&#125;])
+
+完成
+123456789comp = qianfan.Completion()resp = comp.do(model=&quot;ERNIE-Bot&quot;, prompt=&quot;你好&quot;)# 输出：你好！有什么我可以帮助你的吗？# 续写功能同样支 ...</div></div></a></div><div><a href="/forward/a587df74.html" title="Langchain系列[05]runnable系列函数"><img class="cover" src="/img/langchain/cover.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-07-02</div><div class="title">Langchain系列[05]runnable系列函数</div><div class="info">目标为了帮助小伙伴们更好的发挥chain 的作用以及增加chain 的灵活性，有一些函数可以参与到chain的各环节，这个文档来给大家介绍一下~
+
+RunnableParallel
+RunnablePassthrough
+RunnableLambda
+RunnableBranch
+
+
+RunnableParallelRunnableParallel 在将一个 Runnable 的输出调整为符合序列中下一个 Runnable 的输入格式时非常有用。在这里，提示（prompt）的输入预期是一个包含“context”和“question”键的映射（map）。用户输入仅仅是问题（question）。我们需要使用我们的检索器（retriever）获取上下文（context），并将用户输入作为“question”键下的值传递过去。
+123456789101112131415161718192021# 提示词template = &quot;&quot;&quot;Answer the question based only on the following context:&#123;contex ...</div></div></a></div><div><a href="/forward/14a9d288.html" title="Langchain系列[07] 函数 VS 工具 VS Agent"><img class="cover" src="/img/langchain/cover.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-07-12</div><div class="title">Langchain系列[07] 函数 VS 工具 VS Agent</div><div class="info">目标了解 function 调用、工具调用 和 Agent
+
+function：别用了（OpenAI API has deprecated functions in favor of tools）
+Tool ：能用，但是需要我们自己调用函数，并实现后续逻辑
+Agent: 推荐，自动调用我们本地定义的函数
+核心思想：通过llms 来识别用户意图并调用本地函数（Agent）
+https://python.langchain.com/docs/modules/agents/agent_types/openai_functions_agent
+1. function call + tools大模型的函数调用功能，最早来自OpenAI.
+OpenAI 函数是 OpenAI API 中的一个功能，允许用户通过 API 调用自定义函数。这些函数可以是在 Python 中定义的任何函数，可以接受任何类型的输入，并返回任何类型的输出。这使得用户可以扩展 OpenAI 模型的功能，使其能够执行特定的任务或操作。
+OpenAI 函数的接收方式如下：
+
+首先，用户需要定义一个函数，并将其作为参数传递给 Ope ...</div></div></a></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">粥余</div><div class="author-info__description">👨🏻‍💻 who wants to be a bard</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">27</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">5</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">3</div></a></div></div><div class="sticky_layout"><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/forward/d9fa438e.html" title="Langchain系列[20]与SQL数据库进行聊天"><img src="/img/langchain/cover.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Langchain系列[20]与SQL数据库进行聊天"/></a><div class="content"><a class="title" href="/forward/d9fa438e.html" title="Langchain系列[20]与SQL数据库进行聊天">Langchain系列[20]与SQL数据库进行聊天</a><time datetime="2024-08-28T14:40:17.000Z" title="发表于 2024-08-28 22:40:17">2024-08-28</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/forward/5cb2ba7c.html" title="Langchain系列[19]信息抽取+langserve服务端"><img src="/img/langchain/cover.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Langchain系列[19]信息抽取+langserve服务端"/></a><div class="content"><a class="title" href="/forward/5cb2ba7c.html" title="Langchain系列[19]信息抽取+langserve服务端">Langchain系列[19]信息抽取+langserve服务端</a><time datetime="2024-08-28T14:36:34.000Z" title="发表于 2024-08-28 22:36:34">2024-08-28</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/forward/6bf22a39.html" title="Langchain系列[18]RAG：命令行 + UI + Agent"><img src="/img/langchain/cover.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Langchain系列[18]RAG：命令行 + UI + Agent"/></a><div class="content"><a class="title" href="/forward/6bf22a39.html" title="Langchain系列[18]RAG：命令行 + UI + Agent">Langchain系列[18]RAG：命令行 + UI + Agent</a><time datetime="2024-08-25T14:33:47.000Z" title="发表于 2024-08-25 22:33:47">2024-08-25</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/forward/90a12009.html" title="Langchain系列[17]基于用户的搜索 + 添加引文信息"><img src="/img/langchain/cover.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Langchain系列[17]基于用户的搜索 + 添加引文信息"/></a><div class="content"><a class="title" href="/forward/90a12009.html" title="Langchain系列[17]基于用户的搜索 + 添加引文信息">Langchain系列[17]基于用户的搜索 + 添加引文信息</a><time datetime="2024-08-22T14:23:00.000Z" title="发表于 2024-08-22 22:23:00">2024-08-22</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/forward/b8db8981.html" title="Langchain系列[16]下载和使用Rerank模型"><img src="/img/langchain/cover.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Langchain系列[16]下载和使用Rerank模型"/></a><div class="content"><a class="title" href="/forward/b8db8981.html" title="Langchain系列[16]下载和使用Rerank模型">Langchain系列[16]下载和使用Rerank模型</a><time datetime="2024-08-20T13:56:00.000Z" title="发表于 2024-08-20 21:56:00">2024-08-20</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div id="footer-group-container"><div class="footer-group"><span class="footer-group-title">外链</span><a class="footer-group-item" target="_blank" rel="noopener" href="https://www.tiobe.com/tiobe-index/">编程语言排名</a><a class="footer-group-item" target="_blank" rel="noopener" href="https://www.submarinecablemap.com/">海底光缆分布</a></div><div class="footer-group"><span class="footer-group-title">导航</span><a class="footer-group-item" href="/link/">友情链接</a><a class="footer-group-item" href="/tags/">全部标签</a><a class="footer-group-item" href="/charts/">文章统计</a><a class="footer-group-item" href="/bookshelf/">收藏书单</a></div><div class="footer-group"><span class="footer-group-title">分类</span></div><div class="footer-group"><span class="footer-group-title">关于</span><a class="footer-group-item" href="/notice/">网站公告</a><a class="footer-group-item" href="/about/">关于本站</a><a class="footer-group-item" href="/status">站点监控</a></div><div class="footer-group" id="footer-group-flink"><span class="footer-group-title">友链<i class="fas fa-arrow-rotate-right" title="随机友链" onclick="eurkon.footerRandomFlink(flinks, 3);"></i></span><a class="footer-group-item" href="" target="_blank" rel="noopener external nofollow noreferrer">加载中...</a><a class="footer-group-item" href="" target="_blank" rel="noopener external nofollow noreferrer">加载中...</a><a class="footer-group-item" href="" target="_blank" rel="noopener external nofollow noreferrer">加载中...</a><a class="footer-group-item" href="/link/">更多友链</a></div><div class="footer-group"><span class="footer-group-title">协议</span><a class="footer-group-item" href="/protocol/comment/" title="用户发言前，请认真阅读本条例。一经发言，即视为同意接受本条例；如不同意，请勿发言。">评论协议</a><a class="footer-group-item" href="/protocol/copyright/" title="本站所有原创文章采用知识共享(Creative Commons)署名—非商业性使用—相同方式共享4.0国际公共许可协议">版权协议</a></div></div><div id="footer-banner"><div id="footer-banner-container"><div class="footer-banner"><div class="copyright">Copyright &copy; 2019 - 2024  粥余阿~  All Rights Reserved.</div></div><div class="footer-banner"><a target="_blank" rel="noopener" href="https://beian.miit.gov.cn">浙ICP备2024061025号</a></div></div></div></div></footer></div><div class="hidden" id="rightside-mask" onclick="eurkon.switchRightSide();"></div><div class="hidden" id="rightside"><div id="rightside-header"><div id="rightside-back"><i class="fas fa-chevron-left" onclick="eurkon.backRightSide();"></i></div><div id="rightside-title">设置</div><div id="rightside-close" onclick="eurkon.switchRightSide();"><i class="fas fa-xmark"></i></div></div><div id="rightside-content"><div id="card-post-content"><div class="card-widget card-categories"><div class="item-headline">
+            <i class="fas fa-folder-open"></i>
+            <span>分类</span>
+            
+            </div>
+            <ul class="card-category-list" id="aside-cat-list">
+            <li class="card-category-list-item "><a class="card-category-list-link" href="/categories/%E6%8A%98%E8%85%BE/"><span class="card-category-list-name">折腾</span><span class="card-category-list-count">1</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/%E6%8E%A2%E7%B4%A2/"><span class="card-category-list-name">探索</span><span class="card-category-list-count">1</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/%E6%97%A5%E8%AE%B0/"><span class="card-category-list-name">日记</span><span class="card-category-list-count">4</span></a></li>
+            </ul></div><div class="card-widget card-tags"><div class="item-headline"><i class="fas fa-tags"></i><span>标签</span></div><div class="card-tag-cloud"><a id="tags/大模型应用/" href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E5%BA%94%E7%94%A8/" style="font-size: 1.15em; color: rgb(19, 141, 63)">大模型应用<sup>1</sup></a><a id="tags/langchain/" href="/tags/langchain/" style="font-size: 1.45em; color: rgb(5, 68, 42)">langchain<sup>19</sup></a><a id="tags/place/" href="/tags/place/" style="font-size: 1.15em; color: rgb(89, 89, 102)">place<sup>1</sup></a><a id="tags/MacOS终端/" href="/tags/MacOS%E7%BB%88%E7%AB%AF/" style="font-size: 1.15em; color: rgb(127, 28, 192)">MacOS终端<sup>1</sup></a><a id="tags/信息系统管理工程师/" href="/tags/%E4%BF%A1%E6%81%AF%E7%B3%BB%E7%BB%9F%E7%AE%A1%E7%90%86%E5%B7%A5%E7%A8%8B%E5%B8%88/" style="font-size: 1.3em; color: rgb(45, 54, 163)">信息系统管理工程师<sup>4</sup></a></div></div></div></div><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-sun"></i><i class="fas fa-moon"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div></div></div><div id="search-mask"></div></div><div id="rightmenu"><div class="rightmenu-group rightmenu-small"><div class="rightmenu-item" id="menu-backward" onclick="window.history.back()"><i class="fas fa-arrow-left"></i></div><div class="rightmenu-item" id="menu-forward" onclick="window.history.forward()"><i class="fas fa-arrow-right"></i></div><div class="rightmenu-item" id="menu-refresh" onclick="window.history.reload()"><i class="fas fa-arrow-rotate-right"></i></div><div class="rightmenu-item" id="menu-top" onclick="btf.scrollToDest(0, 500)"><i class="fas fa-arrow-up"></i></div></div><div class="rightmenu-group rightmenu-line" id="rightmenu-text"><div class="rightmenu-item" id="menu-copy"><i class="fas fa-copy"></i><span>复制内容</span></div><div class="rightmenu-item" id="menu-comment"><i class="fas fa-comment"></i><span>引用评论</span></div><div class="rightmenu-item" id="menu-paste"><i class="fas fa-paste"></i><span>粘贴文本</span></div><div class="rightmenu-item" id="menu-search"><i class="fas fa-search"></i><span>在本站搜索</span></div><div class="rightmenu-item" id="menu-baidu"><i class="fas fa-search-plus"></i><span>去百度搜索</span></div></div><div class="rightmenu-group rightmenu-line" id="rightmenu-href"><div class="rightmenu-item" id="menu-copy-image"><i class="fas fa-copy"></i><span>复制图片</span></div><div class="rightmenu-item" id="menu-download-image"><i class="fas fa-download"></i><span>下载图片</span></div><div class="rightmenu-item" id="menu-link"><i class="fas fa-link"></i><span>分享链接</span></div><div class="rightmenu-item" id="menu-window"><i class="fas fa-window-restore"></i><span>新窗口打开</span></div></div><div class="rightmenu-group rightmenu-line" id="rightmenu-post"><a class="rightmenu-item" id="menu-random" href="/random/"><i class="fas fa-random"></i><span>随机文章</span></a><a class="rightmenu-item" id="menu-categories" href="/categories/"><i class="fas fa-shapes"></i><span>全部分类</span></a><a class="rightmenu-item" id="menu-tags" href="/tags/"><i class="fas fa-tags"></i><span>所有标签</span></a><div class="rightmenu-item" id="menu-share"><i class="fas fa-share-square"></i><span>分享本页</span></div></div><div class="rightmenu-group rightmenu-line" id="rightmenu-site"><a class="rightmenu-item" id="menu-message" href="/message/"><i class="fas fa-envelope"></i><span>留言信箱</span></a><a class="rightmenu-item" id="menu-about" href="/about/"><i class="fas fa-address-card"></i><span>关于本站</span></a></div></div><div id="rightmenu-mask"></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/eurkon/color-thief.min.js"></script><script defer src="/js/eurkon/eurkon.js"></script><script defer data-pjax src="/js/eurkon/refresh.js"></script><script src="/js/tw_cn.js"></script><script src="/css/fei/fancybox.umd.min.js"></script><script src="/css/fei/instantpage.min.js" type="module"></script><script src="/js/search/local-search.js"></script><div class="js-pjax"></div><script defer data-pjax async src="//at.alicdn.com/t/font_2358265_expoyqe85d4.js"></script><div class="aplayer no-destroy" data-id="9114857987" data-server="netease" data-type="playlist" data-order="random" data-fixed="true" data-autoplay="false"> </div><link rel="stylesheet" href="/css/fei/APlayer.min.css" media="print" onload="this.media='all'"><script src="/css/fei/APlayer.min.js"></script><script src="/css/fei/Meting.min.js"></script><script src="/css/fei/pjax.min.js"></script><script>let pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+var pjax = new Pjax({
+  elements: 'a:not([target="_blank"])',
+  selectors: pjaxSelectors,
+  cacheBust: false,
+  analytics: true,
+  scrollRestoration: false
+})
+
+document.addEventListener('pjax:send', function () {
+
+  // removeEventListener scroll 
+  window.tocScrollFn && window.removeEventListener('scroll', window.tocScrollFn)
+  window.scrollCollect && window.removeEventListener('scroll', scrollCollect)
+
+  document.getElementById('rightside').style.cssText = "opacity: ''; transform: ''"
+  
+  if (window.aplayers) {
+    for (let i = 0; i < window.aplayers.length; i++) {
+      if (!window.aplayers[i].options.fixed) {
+        window.aplayers[i].destroy()
+      }
+    }
+  }
+
+  typeof typed === 'object' && typed.destroy()
+
+  //reset readmode
+  const $bodyClassList = document.body.classList
+  $bodyClassList.contains('read-mode') && $bodyClassList.remove('read-mode')
+
+  typeof disqusjs === 'object' && disqusjs.destroy()
+})
+
+document.addEventListener('pjax:complete', function () {
+  window.refreshFn()
+
+  document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+  })
+
+  GLOBAL_CONFIG.islazyload && window.lazyLoadInstance.update()
+
+  typeof chatBtnFn === 'function' && chatBtnFn()
+  typeof panguInit === 'function' && panguInit()
+
+  // google analytics
+  typeof gtag === 'function' && gtag('config', 'G-0MFDY8HY5K', {'page_path': window.location.pathname});
+
+  // baidu analytics
+  typeof _hmt === 'object' && _hmt.push(['_trackPageview',window.location.pathname]);
+
+  typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+
+  // prismjs
+  typeof Prism === 'object' && Prism.highlightAll()
+
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-0MFDY8HY5K');
+
+})
+
+document.addEventListener('pjax:error', (e) => {
+  if (e.request.status === 404) {
+    pjax.loadUrl('/404.html')
+  }
+})</script></div></body></html><script>var posts=["forward/1f77414f.html","forward/24d30ec1.html","forward/53b4c1f8.html","forward/1f042660.html","forward/fa3d6d2f.html","forward/a587df74.html","forward/14a9d288.html","forward/28a937fe.html","forward/fbdea40c.html","forward/a9247aca.html","forward/1fbe595c.html","forward/69e87aa0.html","forward/ee0ed6e3.html","forward/5bde2632.html","forward/995d7fde.html","forward/b8db8981.html","forward/efdbd4e2.html","forward/90a12009.html","forward/6bf22a39.html","forward/d9fa438e.html","forward/4a17b156.html","forward/5cb2ba7c.html","forward/10883bf2.html","forward/cff67e5b.html","forward/8f372709.html","forward/624a8c21.html","forward/20906a71.html"];function toRandomPost(){ window.pjax ? pjax.loadUrl('/'+posts[Math.floor(Math.random()*posts.length)]) : window.open('/'+posts[Math.floor(Math.random()*posts.length)], "_self"); };</script><script>var flinks=[{"name":"Eurkon","link":"https://blog.eurkon.com","avatar":"https://blog.eurkon.com/images/user/avatar.jpg","descr":"不只是代码的搬运工"},{"name":"华为开源镜像站","link":"https://mirrors.huaweicloud.com/","avatar":"/img/link/huawei.png","descr":"构建万物互联的智能世界"},{"name":"阿里开源镜像站","link":"https://mirrors.aliyun.com/","avatar":"/img/link/aliyun.png","descr":"为了无法计算的价值"},{"name":"网易开源镜像站","link":"https://mirrors.163.com/","avatar":"/img/link/netease.png","descr":"网聚人的力量"},{"name":"搜狐开源镜像站","link":"https://mirrors.sohu.com/","avatar":"/img/link/souhu.png","descr":"上搜狐 知天下"},{"name":"清华开源镜像站","link":"https://mirrors.tuna.tsinghua.edu.cn/","avatar":"/img/link/qh.png","descr":"自强不息,厚德载物"},{"name":"浙大开源镜像站","link":"https://mirrors.zju.edu.cn/","avatar":"/img/link/zd.png","descr":"兼总条贯,知至知终"},{"name":"中科大开源镜像站","link":"https://mirrors.ustc.edu.cn/","avatar":"/img/link/zkd.png","descr":"红专并进,理实交融"},{"name":"兰大开源镜像站","link":"https://mirror.lzu.edu.cn/","avatar":"/img/link/ld.png","descr":"独树一帜,自强不息"}];function toRandomFlink(){window.open(flinks[Math.floor(Math.random()*flinks.length)].link);};</script>

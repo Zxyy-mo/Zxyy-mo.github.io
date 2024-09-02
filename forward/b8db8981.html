@@ -1,0 +1,434 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"><title>Langchain系列[16]下载和使用Rerank模型 | 粥余阿~</title><meta name="author" content="粥余"><meta name="copyright" content="粥余"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="Rerank 即重新排序，是信息检索、推荐系统、自然语言处理和机器学习领域中的一种常见技术。它的目的是提高搜索结果、推荐列表或生成内容的相关性，使其更符合用户的需求或期望。 在RAG里，我们主要利用Rerank 模型来对初步检索出的文档（比如通过BM25或者向量检索召回的文档）进行重排序和过滤。  支持一种语言的嵌入模型  英语 bge-large-en 中文 bge-large-zh  支持双语">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Langchain系列[16]下载和使用Rerank模型">
+<meta property="og:url" content="https://zxyy.me/forward/b8db8981.html">
+<meta property="og:site_name" content="粥余阿~">
+<meta property="og:description" content="Rerank 即重新排序，是信息检索、推荐系统、自然语言处理和机器学习领域中的一种常见技术。它的目的是提高搜索结果、推荐列表或生成内容的相关性，使其更符合用户的需求或期望。 在RAG里，我们主要利用Rerank 模型来对初步检索出的文档（比如通过BM25或者向量检索召回的文档）进行重排序和过滤。  支持一种语言的嵌入模型  英语 bge-large-en 中文 bge-large-zh  支持双语">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://zxyy.me/img/langchain/cover.png">
+<meta property="article:published_time" content="2024-08-20T13:56:00.000Z">
+<meta property="article:modified_time" content="2024-09-02T14:46:04.283Z">
+<meta property="article:author" content="粥余">
+<meta property="article:tag" content="langchain">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zxyy.me/img/langchain/cover.png"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://zxyy.me/forward/b8db8981.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//www.google-analytics.com" crossorigin=""/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="/css/fei/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="/css/fei/fancybox.min.css" media="print" onload="this.media='all'"><script data-pjax="" defer="" async="async" src="https://www.googletagmanager.com/gtag/js?id=G-0MFDY8HY5K"></script><script>window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-0MFDY8HY5K');
+</script><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.json","preload":false,"languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":300},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '天',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: {"limitCount":100,"languages":{"author":"作者: 粥余","link":"链接: ","source":"来源: 粥余阿~","info":"著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。"}},
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: '/css/fei/fjGallery.min.js',
+      css: '/css/fei/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Langchain系列[16]下载和使用Rerank模型',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: false,
+  postUpdate: '2024-09-02 22:46:04'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = url => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      link.onload = () => resolve()
+      link.onerror = () => reject()
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="https://s1.hdslb.com/bfs/static/jinkela/long/font/regular.css"><link rel="stylesheet" href="/css/fei/swiper-bundle.min.css"><script src="/css/fei/swiper-bundle.min.js"></script><script src="/css/fei/pace.min.js"></script><script src="/css/fei/echarts.min.js"></script><style type="text/css"> .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body { left: -66px !important; /* 默认情况下缩进左侧66px，只留一点箭头部分 */ }
+.aplayer.aplayer-fixed.aplayer-narrow .aplayer-body:hover { left: 0 !important; /* 鼠标悬停是左侧缩进归零，完全显示按钮 */ } </style></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/avatar.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">27</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">5</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">3</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa-fw fas fa-book-open"></i><span> 文章</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><i class="fa-fw fa-fw fas fa-archive"></i><span> 文章列表</span></a></li><li><a class="site-page child" href="/categories/"><i class="fa-fw fa-fw fas fa-shapes"></i><span> 全部分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa-fw fas fa-tags"></i><span> 所有标签</span></a></li><li><a class="site-page child" href="/charts/"><i class="fa-fw fa-fw fas fa-chart-line"></i><span> 文章统计</span></a></li><li><a class="site-page child" href="javascript:toRandomPost();"><i class="fa-fw fa-fw fas fa-random"></i><span> 随便看看</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa-fw fas fa-link"></i><span> 导航</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/link/"><i class="fa-fw fa-fw fas fa-child"></i><span> 友情链接</span></a></li><li><a class="site-page child" href="/about/"><i class="fa-fw fa-fw fas fa-address-card"></i><span> 关于本站</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 其他</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-file-image"></i><span> 收藏图库</span></a></li><li><a class="site-page child" href="/bookshelf/"><i class="fa-fw fas fa-bookmark"></i><span> 收藏书单</span></a></li><li><a class="site-page child" href="/status"><i class="fa-fw fab fa-accessible-icon"></i><span> 站点监控</span></a></li></ul></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/langchain/cover.png')"><nav id="nav"><div id="nav-group"><span id="blog-info"> <a class="site-page" href="/" title="粥余阿~"><span class="site-name">粥余阿~</span><i class="fas fa-home"></i></a></span><span id="page_name"><a class="site-page" id="page-title" title="回到顶部" onclick="btf.scrollToDest(0, 500)"><span>粥余阿~</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa-fw fas fa-book-open"></i><span> 文章</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><i class="fa-fw fa-fw fas fa-archive"></i><span> 文章列表</span></a></li><li><a class="site-page child" href="/categories/"><i class="fa-fw fa-fw fas fa-shapes"></i><span> 全部分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa-fw fas fa-tags"></i><span> 所有标签</span></a></li><li><a class="site-page child" href="/charts/"><i class="fa-fw fa-fw fas fa-chart-line"></i><span> 文章统计</span></a></li><li><a class="site-page child" href="javascript:toRandomPost();"><i class="fa-fw fa-fw fas fa-random"></i><span> 随便看看</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa-fw fas fa-link"></i><span> 导航</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/link/"><i class="fa-fw fa-fw fas fa-child"></i><span> 友情链接</span></a></li><li><a class="site-page child" href="/about/"><i class="fa-fw fa-fw fas fa-address-card"></i><span> 关于本站</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 其他</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-file-image"></i><span> 收藏图库</span></a></li><li><a class="site-page child" href="/bookshelf/"><i class="fa-fw fas fa-bookmark"></i><span> 收藏书单</span></a></li><li><a class="site-page child" href="/status"><i class="fa-fw fab fa-accessible-icon"></i><span> 站点监控</span></a></li></ul></div></div></div><div id="hotkey"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);" title="搜索"><i class="fas fa-search fa-fw"></i></a></div><div id="setting-button" onclick="eurkon.switchRightSide();"><a class="site-page" href="javascript:void(0);" title="设置"><i class="fas fa-screwdriver-wrench fa-fw"></i></a></div><div id="top-button"><a class="site-page" href="javascript:void(0);" title="回到顶部" onclick="btf.scrollToDest(0, 500)"><span class="scroll-percent"></span><i class="fas fa-arrow-up fa-fw"></i></a></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></div></nav><div id="post-cover"><img class="cover" id="post-cover-img" src="/img/langchain/cover.png" alt="cover"></div><div id="post-info"><div id="post-meta"><div class="meta-firstline"><span class="post-meta-tags"><span class="post-meta-separator">|</span><i class="fas fa-tags fa-fw post-meta-icon"></i><a class="post-meta-tags" href="/tags/langchain/">langchain</a></span></div><h1 class="post-title">Langchain系列[16]下载和使用Rerank模型</h1><div class="meta-secondline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2024-08-20T13:56:00.000Z" title="发表于 2024-08-20 21:56:00">2024-08-20</time></span><span class="post-meta-separator">|</span><span class="post-meta-date"><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2024-09-02T14:46:04.283Z" title="更新于 2024-09-02 22:46:04">2024-09-02</time></span><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">2.5k</span><span class="post-meta-separator">|</span></span><span class="post-meta-min2read"><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>10分钟</span></span></div></div></div><section class="main-hero-waves-area waves-area"><svg class="waves-svg" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink" viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto"><defs><path id="gentle-wave" d="M -160 44 c 30 0 58 -18 88 -18 s 58 18 88 18 s 58 -18 88 -18 s 58 18 88 18 v 44 h -352 Z"></path></defs><g class="parallax"><use href="#gentle-wave" x="48" y="0"></use><use href="#gentle-wave" x="48" y="3"></use><use href="#gentle-wave" x="48" y="5"></use><use href="#gentle-wave" x="48" y="7"></use></g></svg></section></header><main class="layout" id="content-inner"><div><div id="post"><article class="post-content" id="article-container"><p><strong>Rerank</strong></p>
+<p>即重新排序，是信息检索、推荐系统、自然语言处理和机器学习领域中的一种常见技术。它的目的是提高搜索结果、推荐列表或生成内容的相关性，使其更符合用户的需求或期望。</p>
+<p>在RAG里，我们主要利用Rerank 模型来对初步检索出的文档（比如通过BM25或者向量检索召回的文档）进行<strong>重排序</strong>和<strong>过滤</strong>。</p>
+<hr>
+<p>支持一种语言的嵌入模型</p>
+<ul>
+<li>英语 bge-large-en</li>
+<li>中文 bge-large-zh</li>
+</ul>
+<p>支持<strong>双语</strong>的嵌入模型</p>
+<ul>
+<li><strong>网易有道 BCEmbedding</strong></li>
+</ul>
+<hr>
+<p><strong>网易有道 BCEmbedding</strong></p>
+<p><strong>优势</strong></p>
+<ul>
+<li><strong>双语和跨语种能力</strong>：基于有道翻译引擎的强大能力，<code>BCEmbedding</code>实现强大的中英双语和跨语种语义表征能力。</li>
+<li><strong>RAG适配</strong>：面向RAG做针对性优化，可适配大多数相关任务，比如<strong>翻译，摘要，问答</strong>等。此外，针对 <strong>问题理解（query understanding）</strong> 也做了针对优化</li>
+<li><strong>高效且精确的语义检索</strong>：<code>EmbeddingModel</code>采用双编码器，可以在第一阶段实现高效的语义检索。<code>RerankerModel</code>采用交叉编码器，可以在第二阶段实现更高精度的语义顺序精排。</li>
+<li><strong>更好的领域泛化性</strong>：为了在更多场景实现更好的效果，我们收集了多种多样的领域数据。</li>
+<li><strong>用户友好</strong>：语义检索时不需要特殊指令前缀。也就是，你不需要为各种任务绞尽脑汁设计指令前缀。</li>
+<li><strong>有意义的重排序分数</strong>：<code>RerankerModel</code>可以提供有意义的语义相关性分数（不仅仅是排序），可以用于过滤无意义文本片段，提高大模型生成效果。</li>
+<li><strong>产品化检验</strong>：<code>BCEmbedding</code>已经被有道众多产品检验。</li>
+</ul>
+<hr>
+<p><strong>模型列表</strong></p>
+<p><a target="_blank" rel="noopener" href="https://github.com/netease-youdao/BCEmbedding/blob/master/README_zh.md#-%E6%A8%A1%E5%9E%8B%E5%88%97%E8%A1%A8">https://github.com/netease-youdao/BCEmbedding/blob/master/README_zh.md#-%E6%A8%A1%E5%9E%8B%E5%88%97%E8%A1%A8</a></p>
+<table>
+<thead>
+<tr>
+<th>模型名称</th>
+<th>模型类型</th>
+<th>支持语种</th>
+<th>参数量</th>
+<th>开源权重</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>bce-embedding-base_v1</td>
+<td><code>EmbeddingModel</code></td>
+<td>中英</td>
+<td>279M</td>
+<td><a target="_blank" rel="noopener" href="https://huggingface.co/maidalun1020/bce-embedding-base_v1">Huggingface(推荐)</a>, <a target="_blank" rel="noopener" href="https://hf-mirror.com/maidalun1020/bce-embedding-base_v1">国内通道</a>, <a target="_blank" rel="noopener" href="https://www.modelscope.cn/models/maidalun/bce-embedding-base_v1/summary">ModelScope</a>, <a target="_blank" rel="noopener" href="https://wisemodel.cn/models/Netease_Youdao/bce-embedding-base_v1">WiseModel</a></td>
+</tr>
+<tr>
+<td>bce-reranker-base_v1</td>
+<td><code>RerankerModel</code></td>
+<td>中英日韩</td>
+<td>279M</td>
+<td><a target="_blank" rel="noopener" href="https://huggingface.co/maidalun1020/bce-reranker-base_v1">Huggingface(推荐)</a>, <a target="_blank" rel="noopener" href="https://hf-mirror.com/maidalun1020/bce-reranker-base_v1">国内通道</a>, <a target="_blank" rel="noopener" href="https://www.modelscope.cn/models/maidalun/bce-reranker-base_v1/summary">ModelScope</a>, <a target="_blank" rel="noopener" href="https://wisemodel.cn/models/Netease_Youdao/bce-reranker-base_v1">WiseModel</a></td>
+</tr>
+</tbody></table>
+<p><strong>模型下载</strong></p>
+<p>嵌入模型：<a target="_blank" rel="noopener" href="https://www.modelscope.cn/models/maidalun/bce-embedding-base_v1/files">https://www.modelscope.cn/models/maidalun/bce-embedding-base_v1/files</a></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git clone https://www.modelscope.cn/maidalun/bce-embedding-base_v1.git</span><br></pre></td></tr></table></figure>
+
+<p>Rerank 模型：<a target="_blank" rel="noopener" href="https://www.modelscope.cn/models/maidalun/bce-reranker-base_v1/summary">https://www.modelscope.cn/models/maidalun/bce-reranker-base_v1/summary</a></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git clone https://www.modelscope.cn/maidalun/bce-reranker-base_v1.git</span><br></pre></td></tr></table></figure>
+
+<p><strong>模型性能：</strong></p>
+<p><img src="%5BVol%5D%5B16%5D%E4%B8%8B%E8%BD%BD%E5%92%8C%E4%BD%BF%E7%94%A8Rerank%E6%A8%A1%E5%9E%8B.assets/image-20240627102045642.png" alt="image-20240627102045642"></p>
+<p>关键参数</p>
+<ul>
+<li><code>RerankerModel</code>支持 <strong>长 passage（超过512 tokens，不超过32k tokens）rerank</strong>；</li>
+<li><code>RerankerModel</code>可以给出有意义 <strong>相关性分数</strong> （<strong>区别于cosine分数</strong>），帮助 <strong>过滤低质量召回</strong>；</li>
+<li><code>EmbeddingModel</code> 768 维度</li>
+</ul>
+<hr>
+<p>安装 BCEmbedding</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip install BCEmbedding</span><br></pre></td></tr></table></figure>
+
+<p><strong>理解Rerank 和 cosine 语义相似 的不同</strong></p>
+<p>问题：你最喜欢的电影是什么？ 和下面这些回答的cosine语义相似度</p>
+<p><strong>bce-embedding-base_v1  和 bge_large_zh 结果一致</strong></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">[<span class="number">1</span>] 我最喜欢的电影是《阿甘正传》。        Score:<span class="number">0.6105921907574262</span></span><br><span class="line">[<span class="number">2</span>] 我最喜欢的电影类型是恐怖片。          Score:<span class="number">0.5381861816884799</span></span><br><span class="line">[<span class="number">3</span>] 我最喜欢的电影导演是斯皮尔伯格。       Score:<span class="number">0.4905046919817628</span></span><br><span class="line">[<span class="number">4</span>] 我最喜欢的书是《哈利波特》。          Score:<span class="number">0.4652198126696215</span></span><br><span class="line">[<span class="number">5</span>] 我不喜欢看电影。                     Score:<span class="number">0.44154025662995605</span></span><br><span class="line">[<span class="number">6</span>] 我喜欢看科幻电影，尤其是《星际穿越》。 Score:<span class="number">0.4249389530579074</span></span><br><span class="line">[<span class="number">7</span>] 我最喜欢的音乐是爵士乐。               Score:<span class="number">0.39165986473334957</span></span><br><span class="line">[<span class="number">8</span>] 昨天晚上我看了一部很好的电影。         Score:<span class="number">0.35591581297344105</span></span><br><span class="line">[<span class="number">9</span>] 我最喜欢的运动是篮球。                 Score:<span class="number">0.3554765233404198</span></span><br><span class="line">[<span class="number">10</span>] 我喜欢吃披萨。                       Score:<span class="number">0.34989368275228544</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>经过re-rank，效果非常明显！</strong></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">我最喜欢的电影是《阿甘正传》。 [<span class="number">1</span>]</span><br><span class="line">我最喜欢的电影类型是恐怖片 [<span class="number">2</span>]</span><br><span class="line">我喜欢看科幻电影，尤其是《星际穿越》。 [<span class="number">6</span>]</span><br><span class="line">我最喜欢的电影导演是斯皮尔伯格。 [<span class="number">3</span>]</span><br><span class="line">昨天晚上我看了一部很好的电影。 [<span class="number">8</span>]</span><br><span class="line">我最喜欢的书是《哈利波特》。 [<span class="number">4</span>]</span><br><span class="line">我不喜欢看电影。 [<span class="number">5</span>]</span><br><span class="line">我最喜欢的音乐是爵士乐。 [<span class="number">7</span>]</span><br><span class="line">我喜欢吃披萨。 [<span class="number">10</span>]</span><br><span class="line">我最喜欢的运动是篮球。 [<span class="number">9</span>]</span><br></pre></td></tr></table></figure>
+
+<p>嵌入模型使用方法</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 初始化本地的 embedding 模块</span></span><br><span class="line">embedding_model_name = <span class="string">&#x27;D:\LLM\\bce_modesl\\bce-embedding-base_v1&#x27;</span></span><br><span class="line"><span class="comment"># 使用 GPU</span></span><br><span class="line"><span class="comment"># embedding_model_kwargs = &#123;&#x27;device&#x27;: &#x27;cuda:0&#x27;&#125;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 使用 CPU</span></span><br><span class="line">embedding_model_kwargs = &#123;<span class="string">&#x27;device&#x27;</span>: <span class="string">&#x27;cpu&#x27;</span>&#125;</span><br><span class="line"></span><br><span class="line">embedding_encode_kwargs = &#123;<span class="string">&#x27;batch_size&#x27;</span>: <span class="number">32</span>, <span class="string">&#x27;normalize_embeddings&#x27;</span>: <span class="literal">True</span>, &#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 初始化</span></span><br><span class="line">embed_model = HuggingFaceEmbeddings(</span><br><span class="line">    model_name=embedding_model_name,</span><br><span class="line">    model_kwargs=embedding_model_kwargs,</span><br><span class="line">    encode_kwargs=embedding_encode_kwargs</span><br><span class="line">)</span><br><span class="line"><span class="comment"># 小测试</span></span><br><span class="line">query = <span class="string">&#x27;你好呀兄弟！&#x27;</span></span><br><span class="line">passages = [<span class="string">&#x27;天真热&#x27;</span>, <span class="string">&#x27;嗯呢&#x27;</span>]</span><br><span class="line">query_embedding = embed_model.embed_query(query)</span><br><span class="line">passages_embeddings = embed_model.embed_documents(passages)</span><br></pre></td></tr></table></figure>
+
+<p>Rerank 模型使用方法</p>
+<p>非langchain 方法</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">query = <span class="string">&#x27;你最喜欢的电影是什么？&#x27;</span></span><br><span class="line">passages = [</span><br><span class="line">    <span class="string">&#x27;我最喜欢的电影是《阿甘正传》。&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;我最喜欢的电影类型是恐怖片&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;我最喜欢的电影导演是斯皮尔伯格。&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;我最喜欢的书是《哈利波特》。&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;我不喜欢看电影。&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;我喜欢看科幻电影，尤其是《星际穿越》。&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;我最喜欢的音乐是爵士乐。&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;昨天晚上我看了一部很好的电影。&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;我最喜欢的运动是篮球。&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;我喜欢吃披萨。&#x27;</span></span><br><span class="line">]</span><br><span class="line"></span><br><span class="line"><span class="comment"># construct sentence pairs</span></span><br><span class="line">sentence_pairs = [[query, passage] <span class="keyword">for</span> passage <span class="keyword">in</span> passages]</span><br><span class="line"></span><br><span class="line"><span class="comment"># rerank 模型所在目录</span></span><br><span class="line">reranker_model = <span class="string">&#x27;D:\LLM\\bce_modesl\\bce-reranker-base_v1&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 初始化</span></span><br><span class="line">model = RerankerModel(model_name_or_path=reranker_model)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 得到模型评估的分数</span></span><br><span class="line">scores = model.compute_score(sentence_pairs)</span><br><span class="line"></span><br><span class="line"><span class="comment"># rerank 过滤</span></span><br><span class="line">rerank_results = model.rerank(query, passages)</span><br><span class="line">doc_list = rerank_results[<span class="string">&#x27;rerank_passages&#x27;</span>]</span><br><span class="line"><span class="keyword">for</span> line <span class="keyword">in</span> doc_list:</span><br><span class="line">    <span class="built_in">print</span>(line)</span><br><span class="line"><span class="keyword">pass</span></span><br></pre></td></tr></table></figure>
+
+<p>langchain 调用方法： 可以作为compressor直接传给ContextualCompressionRetriever</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 定义 reranker</span></span><br><span class="line">reranker_args = &#123;<span class="string">&#x27;model&#x27;</span>: <span class="string">&#x27;D:\LLM\\bce_modesl\\bce-reranker-base_v1&#x27;</span>, <span class="string">&#x27;top_n&#x27;</span>: <span class="number">10</span>, <span class="string">&#x27;device&#x27;</span>: <span class="string">&#x27;cuda:0&#x27;</span>&#125;</span><br><span class="line">reranker = BCERerank(**reranker_args)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 生成一个langchain 的语境压缩检索器</span></span><br><span class="line">compression_retriever = ContextualCompressionRetriever(</span><br><span class="line">    base_compressor=reranker, base_retriever=retriever</span><br><span class="line">)</span><br><span class="line"><span class="comment"># 搜索</span></span><br><span class="line">docs = compression_retriever.get_relevant_documents(<span class="string">&#x27;你最喜欢的电影是什么?&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># ------- 一条龙处理 </span></span><br><span class="line"></span><br><span class="line">   <span class="comment"># 文档分割器</span></span><br><span class="line">    text_splitter = RecursiveCharacterTextSplitter(chunk_size=<span class="number">400</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 向量过滤</span></span><br><span class="line">    embedding_filter = EmbeddingsFilter(embeddings=embed_model, similarity_threshold=<span class="number">0.6</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 文档去重</span></span><br><span class="line">    redundant_filter = EmbeddingsRedundantFilter(embeddings=embed_model)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 内容抽取</span></span><br><span class="line">    llm_extractor = LLMChainExtractor.from_llm(qianfan_chat)</span><br><span class="line"></span><br><span class="line">    pipeline_compressor = DocumentCompressorPipeline(</span><br><span class="line">        transformers=[text_splitter, embedding_filter, redundant_filter, reranker, llm_extractor]</span><br><span class="line">    )</span><br><span class="line">    pipeline_retriever = ContextualCompressionRetriever(</span><br><span class="line">        base_compressor=pipeline_compressor, base_retriever=retriever</span><br><span class="line">    )</span><br><span class="line">    docs = pipeline_retriever.get_relevant_documents(query)</span><br></pre></td></tr></table></figure>
+
+<p>召回了20个文档，经过 <strong>分割</strong>、<strong>向量过滤</strong>、<strong>文档去重</strong>、<strong>rerank</strong>，只有3个文档到了 <strong>信息抽取</strong> 环节</p>
+<p><img src="%5BVol%5D%5B16%5D%E4%B8%8B%E8%BD%BD%E5%92%8C%E4%BD%BF%E7%94%A8Rerank%E6%A8%A1%E5%9E%8B.assets/image-20240627102059130.png" alt="image-20240627102059130"></p>
+<p>相关代码</p>
+<ul>
+<li>测试数据放到数据库</li>
+<li>langchain中rerank 查询</li>
+<li>非langchain 调用方法</li>
+</ul>
+<hr>
+<p>测试数据放到数据库</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> os</span><br><span class="line"><span class="keyword">from</span> langchain.text_splitter <span class="keyword">import</span> RecursiveCharacterTextSplitter</span><br><span class="line"><span class="keyword">from</span> langchain_community.chat_models <span class="keyword">import</span> QianfanChatEndpoint</span><br><span class="line"><span class="keyword">from</span> langchain_community.document_loaders <span class="keyword">import</span> TextLoader, DirectoryLoader</span><br><span class="line"><span class="keyword">from</span> langchain_community.embeddings <span class="keyword">import</span> QianfanEmbeddingsEndpoint, HuggingFaceEmbeddings</span><br><span class="line"><span class="keyword">from</span> langchain <span class="keyword">import</span> hub</span><br><span class="line"><span class="keyword">from</span> langchain_community.vectorstores.elasticsearch <span class="keyword">import</span> ElasticsearchStore</span><br><span class="line"><span class="keyword">from</span> langchain_core.documents <span class="keyword">import</span> Document</span><br><span class="line"><span class="keyword">from</span> langchain_core.output_parsers <span class="keyword">import</span> StrOutputParser</span><br><span class="line"><span class="keyword">from</span> langchain_core.runnables <span class="keyword">import</span> RunnablePassthrough</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">cosine_similarity</span>(<span class="params">vec1, vec2</span>):</span><br><span class="line">    dot_product = np.dot(vec1, vec2)</span><br><span class="line">    norm_vec1 = np.linalg.norm(vec1)</span><br><span class="line">    norm_vec2 = np.linalg.norm(vec2)</span><br><span class="line">    <span class="keyword">return</span> dot_product / (norm_vec1 * norm_vec2)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 使用本地网易有道模型  BCE</span></span><br><span class="line">    embedding_model_name = <span class="string">&#x27;D:\LLM\\bce_modesl\\bce-embedding-base_v1&#x27;</span></span><br><span class="line">    embedding_model_kwargs = &#123;<span class="string">&#x27;device&#x27;</span>: <span class="string">&#x27;cuda:0&#x27;</span>&#125;</span><br><span class="line">    embedding_encode_kwargs = &#123;<span class="string">&#x27;batch_size&#x27;</span>: <span class="number">32</span>, <span class="string">&#x27;normalize_embeddings&#x27;</span>: <span class="literal">True</span>, &#125;</span><br><span class="line"></span><br><span class="line">    embed_model = HuggingFaceEmbeddings(</span><br><span class="line">        model_name=embedding_model_name,</span><br><span class="line">        model_kwargs=embedding_model_kwargs,</span><br><span class="line">        encode_kwargs=embedding_encode_kwargs</span><br><span class="line">    )</span><br><span class="line"></span><br><span class="line">    doc_list = [</span><br><span class="line">        <span class="string">&#x27;我最喜欢的电影是《阿甘正传》。&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;我最喜欢的电影类型是恐怖片&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;我最喜欢的电影导演是斯皮尔伯格。&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;我最喜欢的书是《哈利波特》。&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;我不喜欢看电影。&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;我喜欢看科幻电影，尤其是《星际穿越》。&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;我最喜欢的音乐是爵士乐。&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;昨天晚上我看了一部很好的电影。&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;我最喜欢的运动是篮球。&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;我喜欢吃披萨。&#x27;</span></span><br><span class="line">    ]</span><br><span class="line">    docs = []</span><br><span class="line">    index =<span class="number">1</span></span><br><span class="line">    <span class="keyword">for</span> line <span class="keyword">in</span> doc_list:</span><br><span class="line">        tmp_doc = Document(page_content=line)</span><br><span class="line">        tmp_doc.metadata[<span class="string">&#x27;num&#x27;</span>] = index</span><br><span class="line">        index += <span class="number">1</span></span><br><span class="line">        docs.append(tmp_doc)</span><br><span class="line">    <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line">    vectorstore = ElasticsearchStore(</span><br><span class="line">        es_url=os.environ[<span class="string">&#x27;ELASTIC_HOST_HTTP&#x27;</span>],</span><br><span class="line">        index_name=<span class="string">&quot;index_ex_768_vectors&quot;</span>,</span><br><span class="line">        embedding=embed_model,</span><br><span class="line">        es_user=<span class="string">&quot;elastic&quot;</span>,</span><br><span class="line">        vector_query_field=<span class="string">&#x27;question_vectors&#x27;</span>,</span><br><span class="line">        es_password=os.environ[<span class="string">&#x27;ELASTIC_ACCESS_PASSWORD&#x27;</span>]</span><br><span class="line">    )</span><br><span class="line">    <span class="comment"># 将本文加入数据库（注意，只需要运行一次；多次运行会有冗余数据）</span></span><br><span class="line">    vectorstore.add_documents(docs)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;Done!&#x27;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>langchain中rerank 查询</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> os</span><br><span class="line"><span class="keyword">from</span> uuid <span class="keyword">import</span> uuid4</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> langchain.retrievers <span class="keyword">import</span> ContextualCompressionRetriever</span><br><span class="line"><span class="keyword">from</span> langchain.retrievers.document_compressors <span class="keyword">import</span> DocumentCompressorPipeline, EmbeddingsFilter, LLMChainExtractor</span><br><span class="line"><span class="keyword">from</span> langchain.text_splitter <span class="keyword">import</span> RecursiveCharacterTextSplitter</span><br><span class="line"><span class="keyword">from</span> langchain_community.chat_models <span class="keyword">import</span> QianfanChatEndpoint</span><br><span class="line"><span class="keyword">from</span> langchain_community.document_loaders <span class="keyword">import</span> TextLoader, DirectoryLoader</span><br><span class="line"><span class="keyword">from</span> langchain_community.document_transformers <span class="keyword">import</span> EmbeddingsRedundantFilter</span><br><span class="line"><span class="keyword">from</span> langchain_community.embeddings <span class="keyword">import</span> QianfanEmbeddingsEndpoint, HuggingFaceEmbeddings</span><br><span class="line"><span class="keyword">from</span> langchain <span class="keyword">import</span> hub</span><br><span class="line"><span class="keyword">from</span> langchain_community.vectorstores.elasticsearch <span class="keyword">import</span> ElasticsearchStore</span><br><span class="line"><span class="keyword">from</span> langchain_core.documents <span class="keyword">import</span> Document</span><br><span class="line"><span class="keyword">from</span> langchain_core.output_parsers <span class="keyword">import</span> StrOutputParser</span><br><span class="line"><span class="keyword">from</span> langchain_core.runnables <span class="keyword">import</span> RunnablePassthrough</span><br><span class="line"><span class="keyword">from</span> BCEmbedding.tools.langchain <span class="keyword">import</span> BCERerank</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line">os.environ[<span class="string">&quot;QIANFAN_ACCESS_KEY&quot;</span>] = os.getenv(<span class="string">&#x27;MY_QIANFAN_ACCESS_KEY&#x27;</span>)</span><br><span class="line">os.environ[<span class="string">&quot;QIANFAN_SECRET_KEY&quot;</span>] = os.getenv(<span class="string">&#x27;MY_QIANFAN_SECRET_KEY&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 千帆 chatModel</span></span><br><span class="line">qianfan_chat = QianfanChatEndpoint(</span><br><span class="line">    model=<span class="string">&quot;ERNIE-Bot-4&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment"># Langsmith 配置，不用可注掉</span></span><br><span class="line">unique_id = uuid4().<span class="built_in">hex</span>[<span class="number">0</span>:<span class="number">8</span>]</span><br><span class="line">os.environ[<span class="string">&quot;LANGCHAIN_PROJECT&quot;</span>] = <span class="string">f&quot; [一条龙] qianfan Tracing Walkthrough - <span class="subst">&#123;unique_id&#125;</span>&quot;</span></span><br><span class="line"><span class="comment"># os.environ[&quot;LANGCHAIN_TRACING_V2&quot;] = &#x27;true&#x27;</span></span><br><span class="line">os.environ[<span class="string">&quot;LANGCHAIN_API_KEY&quot;</span>] = os.getenv(<span class="string">&#x27;MY_LANGCHAIN_API_KEY&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 使用本地网易有道模型  BCE， 使用CPU</span></span><br><span class="line">    embedding_model_name = <span class="string">&#x27;D:\LLM\\bce_modesl\\bce-embedding-base_v1&#x27;</span></span><br><span class="line">    embedding_model_kwargs = &#123;<span class="string">&#x27;device&#x27;</span>: <span class="string">&#x27;cpu&#x27;</span>&#125;</span><br><span class="line">    embedding_encode_kwargs = &#123;<span class="string">&#x27;batch_size&#x27;</span>: <span class="number">32</span>, <span class="string">&#x27;normalize_embeddings&#x27;</span>: <span class="literal">True</span>, &#125;</span><br><span class="line"></span><br><span class="line">    embed_model = HuggingFaceEmbeddings(</span><br><span class="line">        model_name=embedding_model_name,</span><br><span class="line">        model_kwargs=embedding_model_kwargs,</span><br><span class="line">        encode_kwargs=embedding_encode_kwargs</span><br><span class="line">    )</span><br><span class="line"></span><br><span class="line">    vectorstore = ElasticsearchStore(</span><br><span class="line">        es_url=os.environ[<span class="string">&#x27;ELASTIC_HOST_HTTP&#x27;</span>],</span><br><span class="line">        index_name=<span class="string">&quot;index_ex_768_vectors&quot;</span>,</span><br><span class="line">        embedding=embed_model,</span><br><span class="line">        es_user=<span class="string">&quot;elastic&quot;</span>,</span><br><span class="line">        vector_query_field=<span class="string">&#x27;question_vectors&#x27;</span>,</span><br><span class="line">        es_password=os.environ[<span class="string">&#x27;ELASTIC_ACCESS_PASSWORD&#x27;</span>]</span><br><span class="line">    )</span><br><span class="line"></span><br><span class="line">    retriever = vectorstore.as_retriever(search_kwargs=&#123;<span class="string">&quot;k&quot;</span>: <span class="number">20</span>&#125;)</span><br><span class="line"></span><br><span class="line">    query = <span class="string">&#x27;粥余知识库&#x27;</span></span><br><span class="line">    <span class="comment"># 使用GPU</span></span><br><span class="line">    reranker_args = &#123;<span class="string">&#x27;model&#x27;</span>: <span class="string">&#x27;D:\LLM\\bce_modesl\\bce-reranker-base_v1&#x27;</span>, <span class="string">&#x27;top_n&#x27;</span>: <span class="number">10</span>, <span class="string">&#x27;device&#x27;</span>: <span class="string">&#x27;cuda:0&#x27;</span>&#125;</span><br><span class="line">    reranker = BCERerank(**reranker_args)</span><br><span class="line"></span><br><span class="line">    compression_retriever = ContextualCompressionRetriever(</span><br><span class="line">        base_compressor=reranker, base_retriever=retriever</span><br><span class="line">    )</span><br><span class="line"></span><br><span class="line">    <span class="comment"># rerank 过滤文档</span></span><br><span class="line">    <span class="comment"># docs = compression_retriever.get_relevant_documents(query)</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># 文档分割器</span></span><br><span class="line">    text_splitter = RecursiveCharacterTextSplitter(chunk_size=<span class="number">400</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 向量过滤</span></span><br><span class="line">    embedding_filter = EmbeddingsFilter(embeddings=embed_model, similarity_threshold=<span class="number">0.6</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 文档去重</span></span><br><span class="line">    redundant_filter = EmbeddingsRedundantFilter(embeddings=embed_model)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 内容抽取</span></span><br><span class="line">    llm_extractor = LLMChainExtractor.from_llm(qianfan_chat)</span><br><span class="line"></span><br><span class="line">    pipeline_compressor = DocumentCompressorPipeline(</span><br><span class="line">        transformers=[text_splitter, embedding_filter, redundant_filter, reranker, llm_extractor]</span><br><span class="line">    )</span><br><span class="line">    pipeline_retriever = ContextualCompressionRetriever(</span><br><span class="line">        base_compressor=pipeline_compressor, base_retriever=retriever</span><br><span class="line">    )</span><br><span class="line">    docs = pipeline_retriever.get_relevant_documents(query)</span><br><span class="line">    <span class="keyword">pass</span></span><br></pre></td></tr></table></figure>
+
+<p>非langchain 调用方法</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> BCEmbedding <span class="keyword">import</span> RerankerModel, EmbeddingModel</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 测试嵌入模块</span></span><br><span class="line">    embedding_model_name = <span class="string">&#x27;D:\LLM\\bce_modesl\\bce-embedding-base_v1&#x27;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># list of sentences</span></span><br><span class="line">    sentences = [<span class="string">&#x27;哈喽啊兄弟&#x27;</span>, <span class="string">&#x27;明天去上学了&#x27;</span>]</span><br><span class="line"></span><br><span class="line">    <span class="comment"># init embedding model</span></span><br><span class="line">    model = EmbeddingModel(model_name_or_path=embedding_model_name)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># extract embeddings</span></span><br><span class="line">    <span class="comment"># embeddings = model.encode(sentences)</span></span><br><span class="line">    <span class="comment"># pass</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># your query and corresponding passages</span></span><br><span class="line">    query = <span class="string">&#x27;你最喜欢的电影是什么？&#x27;</span></span><br><span class="line">    passages = [</span><br><span class="line">        <span class="string">&#x27;我最喜欢的电影是《阿甘正传》。&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;我最喜欢的电影类型是恐怖片&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;我最喜欢的电影导演是斯皮尔伯格。&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;我最喜欢的书是《哈利波特》。&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;我不喜欢看电影。&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;我喜欢看科幻电影，尤其是《星际穿越》。&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;我最喜欢的音乐是爵士乐。&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;昨天晚上我看了一部很好的电影。&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;我最喜欢的运动是篮球。&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;我喜欢吃披萨。&#x27;</span></span><br><span class="line">    ]</span><br><span class="line"></span><br><span class="line">    <span class="comment"># construct sentence pairs</span></span><br><span class="line">    sentence_pairs = [[query, passage] <span class="keyword">for</span> passage <span class="keyword">in</span> passages]</span><br><span class="line">    reranker_model = <span class="string">&#x27;D:\LLM\\bce_modesl\\bce-reranker-base_v1&#x27;</span></span><br><span class="line">    <span class="comment"># init reranker model</span></span><br><span class="line">    model = RerankerModel(model_name_or_path=reranker_model)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># method 0: calculate scores of sentence pairs</span></span><br><span class="line">    scores = model.compute_score(sentence_pairs)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># method 1: rerank passages</span></span><br><span class="line">    rerank_results = model.rerank(query, passages)</span><br><span class="line">    doc_list = rerank_results[<span class="string">&#x27;rerank_passages&#x27;</span>]</span><br><span class="line">    <span class="keyword">for</span> line <span class="keyword">in</span> doc_list:</span><br><span class="line">        <span class="built_in">print</span>(line)</span><br><span class="line">    <span class="keyword">pass</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>其实如果要达到一个好的效果，还是需要根据使用场景去选择适合的ReRank和embedding</strong></p>
+</article><div class="post-copyright"><div class="post-copyright__title"><span class="post-copyright-info">Langchain系列[16]下载和使用Rerank模型</span></div><div class="post-copyright__url"><span class="post-copyright-info"><a id="post-url" href="https://zxyy.me/forward/b8db8981.html">https://zxyy.me/forward/b8db8981.html</a><a id="post-url-copy" title="复制文章链接" onclick="btf.copyFn(&quot;https://zxyy.me/forward/b8db8981.html&quot;)"><i class="fas fa-paste copy-button"></i></a></span></div><div class="post-copyright__cc"><span class="post-copyright-info">转载前请阅读本站 <a href="/protocol/copyright/" title="本站所有原创文章采用知识共享(Creative Commons)署名—非商业性使用—相同方式共享4.0国际公共许可协议">版权协议</a>，文章著作权归 <a href="https://zxyy.me">粥余</a> 所有，转载请注明出处。</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/langchain/">langchain</a></div><div class="post_share"><div class="social-share" data-image="/img/langchain/cover.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="/css/fei/share.min.css" media="print" onload="this.media='all'"><script src="/css/fei/share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/forward/90a12009.html" title="Langchain系列[17]基于用户的搜索 + 添加引文信息"><img class="cover" src="/img/langchain/cover.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">Langchain系列[17]基于用户的搜索 + 添加引文信息</div><div class="content">注意本文只是一个思路，实际上常规业务场景并不会采用这个方案。基于用户的搜索
+当构建一个检索应用时，你通常需要考虑到多个用户。
+
+目前，LangChain 中没有统一的标志或过滤器来实现这一点。相反，每个向量存储和检索器可能都有自己的实现，并且可能被称为不同的事物。 对于向量存储来说，这通常作为一个关键字参数在 similarity_search 过程中传递。通过阅读文档或源代码，弄清楚你使用的检索器是否支持多个用户，如果支持，如何使用它。这意味着你可能不仅仅是为一个用户存储数据，而是为许多不同的用户存储数据，他们不应该能够看到彼此的数据。
+实现步骤：
+第一步：确保你使用的检索器支持多个用户 （自己设计数据存储结构）
+第二步：将该参数作为一个可配置字段添加到链中（当作参数传递）
+第三步：使用该可配置字段调用链（调用时，区分用户）
+1234比如ElasticSearch 在相似度搜索时，可以添加过滤参数    docs = vectorstore.similarity_search(        query_text, filter=[&#123;&quot;term&quot;: &# ...</div></div></a></div><div class="next-post pull-right"><a href="/forward/5bde2632.html" title="Langchain系列[15]向量过滤 VS 文档去重"><img class="cover" src="/img/langchain/cover.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Langchain系列[15]向量过滤 VS 文档去重</div><div class="content">向量过滤 EmbeddingsFilter
+使用大型语言模型（LLM）来处理每个找到的文件很费钱，而且速度不快。
+而EmbeddingsFilter这个工具提供了一种更经济、更迅速的方法。
+它会先将文件和你的问题转换成一种数学表达（嵌入），然后只挑出那些和你的问题在数学表达上相似的文件。这样就不需要每个文件都去麻烦那个大模型，省时省力。
+设定一个门限值，通过输入问题和内容的相关度（0~1），进行过滤
+12345678910111213141516171819202122232425question = &quot;What is Task Decomposition ?&quot;# 解析并载入urlloader = WebBaseLoader(&quot;https://lilianweng.github.io/posts/2023-06-23-agent/&quot;)docs = loader.load()text_splitter = RecursiveCharacterTextSplitter(chunk_size=400)docs = text_splitter.split ...</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/forward/24d30ec1.html" title="Langchain系列[02]使用LCEL构建一个简单的LLM应用程序"><img class="cover" src="/img/langchain/cover.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-06-23</div><div class="title">Langchain系列[02]使用LCEL构建一个简单的LLM应用程序</div><div class="info">目标今天咱们介绍一下如何使用 LangChain 构建一个简单的 LLM 应用程序。
+这个应用程序能够将英文文本翻译成其他语言。
+这是一个相对简单的 LLM 应用程序 —— 它仅包含一个 LLM 调用和一些提示。
+今天的学习目的是初步了解下面的概念
+
+使用语言模型 （必须）
+使用 PromptTemplates 和 OutputParsers（必须）
+使用 LangChain 表达式语言 (LCEL) 将组件连接在一起（必须）
+使用 LangSmith 调试和跟踪您的应用程序 （不用也问题不大）
+使用 LangServe 部署您的应用程序（不用也问题不大）
+
+准备阶段我们全程使用windows + python, 其他的方法就不介绍了，同学们可以自己探索~
+安装
+1pip install langchain
+
+关于 Jupyter Notebook
+咱们用能跑python的编程工具就可以，用什么来跑不是很重要-。-
+LangSmith
+langsmith 是一个可以跟踪runnable  的工具，可以跟踪和记录复杂流程中的大部分参数，对于复杂问题分析很有帮助。在学习初期，我们可以先不使 ...</div></div></a></div><div><a href="/forward/53b4c1f8.html" title="Langchain系列[03]聊天机器人 Chatbot"><img class="cover" src="/img/langchain/cover.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-06-25</div><div class="title">Langchain系列[03]聊天机器人 Chatbot</div><div class="info">目标
+我们将建立一个带有对话历史的聊天机器人。
+以下是我们将要使用的一些组件：
+
+聊天模型（Chat Models）：聊天机器人的界面是基于消息传递而不是原始文本，因此它更适合使用聊天模型而不是文本型的 LLM。
+提示模板（Prompt Templates）：这些模板简化了组装提示的过程，可以结合默认消息、用户输入、聊天历史以及（可选的）额外检索到的上下文。
+聊天历史（Chat History）：聊天历史允许聊天机器人“记住”过去的交互，并在回应后续问题时考虑这些历史。
+使用 LangSmith 调试和跟踪你的应用程序（非必须）。
+
+
+聊天历史在[Vol][2]中，我们使用了一个 messages[]来保存和传递消息，它是这个样子
+12345[      SystemMessage(content=&quot;Translate the following from English into Italian&quot;),      HumanMessage(content=&quot;hi!&quot;),      ...]
+
+其实，随着对话的增长，我们可以把AI消息和我们自己的消 ...</div></div></a></div><div><a href="/forward/1f042660.html" title="Langchain系列[04]表达式语言LCEL"><img class="cover" src="/img/langchain/cover.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-06-30</div><div class="title">Langchain系列[04]表达式语言LCEL</div><div class="info">目标123- 了解LCEL包含的组件，可以调用的方法。- 链式调用基本形式
+
+LangChain 表达式语言（LCEL）是一种让用户能够更容易地组合不同链条的声明式编程方式。
+之前我们介绍了chain 中的组件，这个文档来明确一下组件之间的输入和输出
+LCEL 从一开始就是为了支持将原型直接投入生产而设计的，无需修改任何代码。这适用于从最简单的“提示+大语言模型”链条到最复杂的链条（我们已经看到有人成功在生产环境中运行包含数百个步骤的 LCEL 链条）。以下是您可能想使用 LCEL 的几个原因：
+
+流支持：使用 LCEL 构建链条时，您可以从第一个令牌开始就获得最快的响应时间（即从输出开始到第一个数据块出现的时间）。对于某些链条来说，这意味着我们可以直接从大语言模型向输出解析器发送令牌流，您将以与模型提供者输出原始令牌相同的速度接收到解析后的数据块。
+
+异步支持：使用 LCEL 构建的任何链条都可以通过同步 API（例如，在 Jupyter  笔记本中测试原型）或异步 API（例如，在 LangServe  服务器中）调用。这使得您可以使用相同的代码进行原型设计和生产，同时还能保持出色 ...</div></div></a></div><div><a href="/forward/fa3d6d2f.html" title="Langchain系列[06]语言模型"><img class="cover" src="/img/langchain/cover.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-07-08</div><div class="title">Langchain系列[06]语言模型</div><div class="info">目标模型入门
+Langchain 2.0 都找不到下面这个图了，藏到了1.0 里面…
+语言模型是核心，我们需要熟悉跟语言模型相关的消息：系统消息、AI消息、Human消息、工具消息…
+
+llm vs  chatModel
+百度千帆
+对话
+1234567chat_comp = qianfan.ChatCompletion(access_key=&quot;...&quot;, secret_key=&quot;...&quot;)# 调用默认模型，即 ERNIE-Bot-turboresp = chat_comp.do(messages=[&#123;    &quot;role&quot;: &quot;user&quot;,    &quot;content&quot;: &quot;你好&quot;&#125;])
+
+完成
+123456789comp = qianfan.Completion()resp = comp.do(model=&quot;ERNIE-Bot&quot;, prompt=&quot;你好&quot;)# 输出：你好！有什么我可以帮助你的吗？# 续写功能同样支 ...</div></div></a></div><div><a href="/forward/a587df74.html" title="Langchain系列[05]runnable系列函数"><img class="cover" src="/img/langchain/cover.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-07-02</div><div class="title">Langchain系列[05]runnable系列函数</div><div class="info">目标为了帮助小伙伴们更好的发挥chain 的作用以及增加chain 的灵活性，有一些函数可以参与到chain的各环节，这个文档来给大家介绍一下~
+
+RunnableParallel
+RunnablePassthrough
+RunnableLambda
+RunnableBranch
+
+
+RunnableParallelRunnableParallel 在将一个 Runnable 的输出调整为符合序列中下一个 Runnable 的输入格式时非常有用。在这里，提示（prompt）的输入预期是一个包含“context”和“question”键的映射（map）。用户输入仅仅是问题（question）。我们需要使用我们的检索器（retriever）获取上下文（context），并将用户输入作为“question”键下的值传递过去。
+123456789101112131415161718192021# 提示词template = &quot;&quot;&quot;Answer the question based only on the following context:&#123;contex ...</div></div></a></div><div><a href="/forward/14a9d288.html" title="Langchain系列[07] 函数 VS 工具 VS Agent"><img class="cover" src="/img/langchain/cover.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-07-12</div><div class="title">Langchain系列[07] 函数 VS 工具 VS Agent</div><div class="info">目标了解 function 调用、工具调用 和 Agent
+
+function：别用了（OpenAI API has deprecated functions in favor of tools）
+Tool ：能用，但是需要我们自己调用函数，并实现后续逻辑
+Agent: 推荐，自动调用我们本地定义的函数
+核心思想：通过llms 来识别用户意图并调用本地函数（Agent）
+https://python.langchain.com/docs/modules/agents/agent_types/openai_functions_agent
+1. function call + tools大模型的函数调用功能，最早来自OpenAI.
+OpenAI 函数是 OpenAI API 中的一个功能，允许用户通过 API 调用自定义函数。这些函数可以是在 Python 中定义的任何函数，可以接受任何类型的输入，并返回任何类型的输出。这使得用户可以扩展 OpenAI 模型的功能，使其能够执行特定的任务或操作。
+OpenAI 函数的接收方式如下：
+
+首先，用户需要定义一个函数，并将其作为参数传递给 Ope ...</div></div></a></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">粥余</div><div class="author-info__description">👨🏻‍💻 who wants to be a bard</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">27</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">5</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">3</div></a></div></div><div class="sticky_layout"><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/forward/d9fa438e.html" title="Langchain系列[20]与SQL数据库进行聊天"><img src="/img/langchain/cover.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Langchain系列[20]与SQL数据库进行聊天"/></a><div class="content"><a class="title" href="/forward/d9fa438e.html" title="Langchain系列[20]与SQL数据库进行聊天">Langchain系列[20]与SQL数据库进行聊天</a><time datetime="2024-08-28T14:40:17.000Z" title="发表于 2024-08-28 22:40:17">2024-08-28</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/forward/5cb2ba7c.html" title="Langchain系列[19]信息抽取+langserve服务端"><img src="/img/langchain/cover.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Langchain系列[19]信息抽取+langserve服务端"/></a><div class="content"><a class="title" href="/forward/5cb2ba7c.html" title="Langchain系列[19]信息抽取+langserve服务端">Langchain系列[19]信息抽取+langserve服务端</a><time datetime="2024-08-28T14:36:34.000Z" title="发表于 2024-08-28 22:36:34">2024-08-28</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/forward/6bf22a39.html" title="Langchain系列[18]RAG：命令行 + UI + Agent"><img src="/img/langchain/cover.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Langchain系列[18]RAG：命令行 + UI + Agent"/></a><div class="content"><a class="title" href="/forward/6bf22a39.html" title="Langchain系列[18]RAG：命令行 + UI + Agent">Langchain系列[18]RAG：命令行 + UI + Agent</a><time datetime="2024-08-25T14:33:47.000Z" title="发表于 2024-08-25 22:33:47">2024-08-25</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/forward/90a12009.html" title="Langchain系列[17]基于用户的搜索 + 添加引文信息"><img src="/img/langchain/cover.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Langchain系列[17]基于用户的搜索 + 添加引文信息"/></a><div class="content"><a class="title" href="/forward/90a12009.html" title="Langchain系列[17]基于用户的搜索 + 添加引文信息">Langchain系列[17]基于用户的搜索 + 添加引文信息</a><time datetime="2024-08-22T14:23:00.000Z" title="发表于 2024-08-22 22:23:00">2024-08-22</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/forward/b8db8981.html" title="Langchain系列[16]下载和使用Rerank模型"><img src="/img/langchain/cover.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Langchain系列[16]下载和使用Rerank模型"/></a><div class="content"><a class="title" href="/forward/b8db8981.html" title="Langchain系列[16]下载和使用Rerank模型">Langchain系列[16]下载和使用Rerank模型</a><time datetime="2024-08-20T13:56:00.000Z" title="发表于 2024-08-20 21:56:00">2024-08-20</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div id="footer-group-container"><div class="footer-group"><span class="footer-group-title">外链</span><a class="footer-group-item" target="_blank" rel="noopener" href="https://www.tiobe.com/tiobe-index/">编程语言排名</a><a class="footer-group-item" target="_blank" rel="noopener" href="https://www.submarinecablemap.com/">海底光缆分布</a></div><div class="footer-group"><span class="footer-group-title">导航</span><a class="footer-group-item" href="/link/">友情链接</a><a class="footer-group-item" href="/tags/">全部标签</a><a class="footer-group-item" href="/charts/">文章统计</a><a class="footer-group-item" href="/bookshelf/">收藏书单</a></div><div class="footer-group"><span class="footer-group-title">分类</span></div><div class="footer-group"><span class="footer-group-title">关于</span><a class="footer-group-item" href="/notice/">网站公告</a><a class="footer-group-item" href="/about/">关于本站</a><a class="footer-group-item" href="/status">站点监控</a></div><div class="footer-group" id="footer-group-flink"><span class="footer-group-title">友链<i class="fas fa-arrow-rotate-right" title="随机友链" onclick="eurkon.footerRandomFlink(flinks, 3);"></i></span><a class="footer-group-item" href="" target="_blank" rel="noopener external nofollow noreferrer">加载中...</a><a class="footer-group-item" href="" target="_blank" rel="noopener external nofollow noreferrer">加载中...</a><a class="footer-group-item" href="" target="_blank" rel="noopener external nofollow noreferrer">加载中...</a><a class="footer-group-item" href="/link/">更多友链</a></div><div class="footer-group"><span class="footer-group-title">协议</span><a class="footer-group-item" href="/protocol/comment/" title="用户发言前，请认真阅读本条例。一经发言，即视为同意接受本条例；如不同意，请勿发言。">评论协议</a><a class="footer-group-item" href="/protocol/copyright/" title="本站所有原创文章采用知识共享(Creative Commons)署名—非商业性使用—相同方式共享4.0国际公共许可协议">版权协议</a></div></div><div id="footer-banner"><div id="footer-banner-container"><div class="footer-banner"><div class="copyright">Copyright &copy; 2019 - 2024  粥余阿~  All Rights Reserved.</div></div><div class="footer-banner"><a target="_blank" rel="noopener" href="https://beian.miit.gov.cn">浙ICP备2024061025号</a></div></div></div></div></footer></div><div class="hidden" id="rightside-mask" onclick="eurkon.switchRightSide();"></div><div class="hidden" id="rightside"><div id="rightside-header"><div id="rightside-back"><i class="fas fa-chevron-left" onclick="eurkon.backRightSide();"></i></div><div id="rightside-title">设置</div><div id="rightside-close" onclick="eurkon.switchRightSide();"><i class="fas fa-xmark"></i></div></div><div id="rightside-content"><div id="card-post-content"><div class="card-widget card-categories"><div class="item-headline">
+            <i class="fas fa-folder-open"></i>
+            <span>分类</span>
+            
+            </div>
+            <ul class="card-category-list" id="aside-cat-list">
+            <li class="card-category-list-item "><a class="card-category-list-link" href="/categories/%E6%8A%98%E8%85%BE/"><span class="card-category-list-name">折腾</span><span class="card-category-list-count">1</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/%E6%8E%A2%E7%B4%A2/"><span class="card-category-list-name">探索</span><span class="card-category-list-count">1</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/%E6%97%A5%E8%AE%B0/"><span class="card-category-list-name">日记</span><span class="card-category-list-count">4</span></a></li>
+            </ul></div><div class="card-widget card-tags"><div class="item-headline"><i class="fas fa-tags"></i><span>标签</span></div><div class="card-tag-cloud"><a id="tags/大模型应用/" href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E5%BA%94%E7%94%A8/" style="font-size: 1.15em; color: rgb(79, 76, 105)">大模型应用<sup>1</sup></a><a id="tags/langchain/" href="/tags/langchain/" style="font-size: 1.45em; color: rgb(160, 178, 81)">langchain<sup>19</sup></a><a id="tags/place/" href="/tags/place/" style="font-size: 1.15em; color: rgb(169, 123, 7)">place<sup>1</sup></a><a id="tags/MacOS终端/" href="/tags/MacOS%E7%BB%88%E7%AB%AF/" style="font-size: 1.15em; color: rgb(36, 129, 65)">MacOS终端<sup>1</sup></a><a id="tags/信息系统管理工程师/" href="/tags/%E4%BF%A1%E6%81%AF%E7%B3%BB%E7%BB%9F%E7%AE%A1%E7%90%86%E5%B7%A5%E7%A8%8B%E5%B8%88/" style="font-size: 1.3em; color: rgb(80, 66, 128)">信息系统管理工程师<sup>4</sup></a></div></div></div></div><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-sun"></i><i class="fas fa-moon"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div></div></div><div id="search-mask"></div></div><div id="rightmenu"><div class="rightmenu-group rightmenu-small"><div class="rightmenu-item" id="menu-backward" onclick="window.history.back()"><i class="fas fa-arrow-left"></i></div><div class="rightmenu-item" id="menu-forward" onclick="window.history.forward()"><i class="fas fa-arrow-right"></i></div><div class="rightmenu-item" id="menu-refresh" onclick="window.history.reload()"><i class="fas fa-arrow-rotate-right"></i></div><div class="rightmenu-item" id="menu-top" onclick="btf.scrollToDest(0, 500)"><i class="fas fa-arrow-up"></i></div></div><div class="rightmenu-group rightmenu-line" id="rightmenu-text"><div class="rightmenu-item" id="menu-copy"><i class="fas fa-copy"></i><span>复制内容</span></div><div class="rightmenu-item" id="menu-comment"><i class="fas fa-comment"></i><span>引用评论</span></div><div class="rightmenu-item" id="menu-paste"><i class="fas fa-paste"></i><span>粘贴文本</span></div><div class="rightmenu-item" id="menu-search"><i class="fas fa-search"></i><span>在本站搜索</span></div><div class="rightmenu-item" id="menu-baidu"><i class="fas fa-search-plus"></i><span>去百度搜索</span></div></div><div class="rightmenu-group rightmenu-line" id="rightmenu-href"><div class="rightmenu-item" id="menu-copy-image"><i class="fas fa-copy"></i><span>复制图片</span></div><div class="rightmenu-item" id="menu-download-image"><i class="fas fa-download"></i><span>下载图片</span></div><div class="rightmenu-item" id="menu-link"><i class="fas fa-link"></i><span>分享链接</span></div><div class="rightmenu-item" id="menu-window"><i class="fas fa-window-restore"></i><span>新窗口打开</span></div></div><div class="rightmenu-group rightmenu-line" id="rightmenu-post"><a class="rightmenu-item" id="menu-random" href="/random/"><i class="fas fa-random"></i><span>随机文章</span></a><a class="rightmenu-item" id="menu-categories" href="/categories/"><i class="fas fa-shapes"></i><span>全部分类</span></a><a class="rightmenu-item" id="menu-tags" href="/tags/"><i class="fas fa-tags"></i><span>所有标签</span></a><div class="rightmenu-item" id="menu-share"><i class="fas fa-share-square"></i><span>分享本页</span></div></div><div class="rightmenu-group rightmenu-line" id="rightmenu-site"><a class="rightmenu-item" id="menu-message" href="/message/"><i class="fas fa-envelope"></i><span>留言信箱</span></a><a class="rightmenu-item" id="menu-about" href="/about/"><i class="fas fa-address-card"></i><span>关于本站</span></a></div></div><div id="rightmenu-mask"></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/eurkon/color-thief.min.js"></script><script defer src="/js/eurkon/eurkon.js"></script><script defer data-pjax src="/js/eurkon/refresh.js"></script><script src="/js/tw_cn.js"></script><script src="/css/fei/fancybox.umd.min.js"></script><script src="/css/fei/instantpage.min.js" type="module"></script><script src="/js/search/local-search.js"></script><div class="js-pjax"></div><script defer data-pjax async src="//at.alicdn.com/t/font_2358265_expoyqe85d4.js"></script><div class="aplayer no-destroy" data-id="9114857987" data-server="netease" data-type="playlist" data-order="random" data-fixed="true" data-autoplay="false"> </div><link rel="stylesheet" href="/css/fei/APlayer.min.css" media="print" onload="this.media='all'"><script src="/css/fei/APlayer.min.js"></script><script src="/css/fei/Meting.min.js"></script><script src="/css/fei/pjax.min.js"></script><script>let pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+var pjax = new Pjax({
+  elements: 'a:not([target="_blank"])',
+  selectors: pjaxSelectors,
+  cacheBust: false,
+  analytics: true,
+  scrollRestoration: false
+})
+
+document.addEventListener('pjax:send', function () {
+
+  // removeEventListener scroll 
+  window.tocScrollFn && window.removeEventListener('scroll', window.tocScrollFn)
+  window.scrollCollect && window.removeEventListener('scroll', scrollCollect)
+
+  document.getElementById('rightside').style.cssText = "opacity: ''; transform: ''"
+  
+  if (window.aplayers) {
+    for (let i = 0; i < window.aplayers.length; i++) {
+      if (!window.aplayers[i].options.fixed) {
+        window.aplayers[i].destroy()
+      }
+    }
+  }
+
+  typeof typed === 'object' && typed.destroy()
+
+  //reset readmode
+  const $bodyClassList = document.body.classList
+  $bodyClassList.contains('read-mode') && $bodyClassList.remove('read-mode')
+
+  typeof disqusjs === 'object' && disqusjs.destroy()
+})
+
+document.addEventListener('pjax:complete', function () {
+  window.refreshFn()
+
+  document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+  })
+
+  GLOBAL_CONFIG.islazyload && window.lazyLoadInstance.update()
+
+  typeof chatBtnFn === 'function' && chatBtnFn()
+  typeof panguInit === 'function' && panguInit()
+
+  // google analytics
+  typeof gtag === 'function' && gtag('config', 'G-0MFDY8HY5K', {'page_path': window.location.pathname});
+
+  // baidu analytics
+  typeof _hmt === 'object' && _hmt.push(['_trackPageview',window.location.pathname]);
+
+  typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+
+  // prismjs
+  typeof Prism === 'object' && Prism.highlightAll()
+
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-0MFDY8HY5K');
+
+})
+
+document.addEventListener('pjax:error', (e) => {
+  if (e.request.status === 404) {
+    pjax.loadUrl('/404.html')
+  }
+})</script></div></body></html><script>var posts=["forward/1f77414f.html","forward/24d30ec1.html","forward/53b4c1f8.html","forward/1f042660.html","forward/fa3d6d2f.html","forward/a587df74.html","forward/14a9d288.html","forward/28a937fe.html","forward/fbdea40c.html","forward/a9247aca.html","forward/1fbe595c.html","forward/69e87aa0.html","forward/ee0ed6e3.html","forward/5bde2632.html","forward/995d7fde.html","forward/b8db8981.html","forward/efdbd4e2.html","forward/90a12009.html","forward/6bf22a39.html","forward/d9fa438e.html","forward/4a17b156.html","forward/5cb2ba7c.html","forward/10883bf2.html","forward/cff67e5b.html","forward/8f372709.html","forward/624a8c21.html","forward/20906a71.html"];function toRandomPost(){ window.pjax ? pjax.loadUrl('/'+posts[Math.floor(Math.random()*posts.length)]) : window.open('/'+posts[Math.floor(Math.random()*posts.length)], "_self"); };</script><script>var flinks=[{"name":"Eurkon","link":"https://blog.eurkon.com","avatar":"https://blog.eurkon.com/images/user/avatar.jpg","descr":"不只是代码的搬运工"},{"name":"华为开源镜像站","link":"https://mirrors.huaweicloud.com/","avatar":"/img/link/huawei.png","descr":"构建万物互联的智能世界"},{"name":"阿里开源镜像站","link":"https://mirrors.aliyun.com/","avatar":"/img/link/aliyun.png","descr":"为了无法计算的价值"},{"name":"网易开源镜像站","link":"https://mirrors.163.com/","avatar":"/img/link/netease.png","descr":"网聚人的力量"},{"name":"搜狐开源镜像站","link":"https://mirrors.sohu.com/","avatar":"/img/link/souhu.png","descr":"上搜狐 知天下"},{"name":"清华开源镜像站","link":"https://mirrors.tuna.tsinghua.edu.cn/","avatar":"/img/link/qh.png","descr":"自强不息,厚德载物"},{"name":"浙大开源镜像站","link":"https://mirrors.zju.edu.cn/","avatar":"/img/link/zd.png","descr":"兼总条贯,知至知终"},{"name":"中科大开源镜像站","link":"https://mirrors.ustc.edu.cn/","avatar":"/img/link/zkd.png","descr":"红专并进,理实交融"},{"name":"兰大开源镜像站","link":"https://mirror.lzu.edu.cn/","avatar":"/img/link/ld.png","descr":"独树一帜,自强不息"}];function toRandomFlink(){window.open(flinks[Math.floor(Math.random()*flinks.length)].link);};</script>
